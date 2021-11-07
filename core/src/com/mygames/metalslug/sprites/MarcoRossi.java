@@ -44,6 +44,9 @@ public class MarcoRossi {
     private State previousState;
     private float stateTimer;
 
+    private boolean isRunningRight;
+    private boolean isShooting;
+
     public MarcoRossi(MissionOneScreen screen){
         this.screen = screen;
         world = screen.getWorld();
@@ -53,6 +56,8 @@ public class MarcoRossi {
         currentState = State.STANDING;
         previousState = State.STANDING;
         stateTimer = 0;
+        isRunningRight = true;
+        isShooting = false;
 
         Array<TextureRegion> frames = new Array<>();
         frames.add(new TextureRegion(textureAtlas.findRegion("idle-torso-pistol-1")));
@@ -85,6 +90,19 @@ public class MarcoRossi {
         frames.add(new TextureRegion(textureAtlas.findRegion("running-legs-10")));
         frames.add(new TextureRegion(textureAtlas.findRegion("running-legs-11")));
         runningLegs = new Animation<TextureRegion>(0.05f, frames);
+        frames.clear();
+
+        frames.add(new TextureRegion(textureAtlas.findRegion("shooting-torso-1")));
+        frames.add(new TextureRegion(textureAtlas.findRegion("shooting-torso-2")));
+        frames.add(new TextureRegion(textureAtlas.findRegion("shooting-torso-3")));
+        frames.add(new TextureRegion(textureAtlas.findRegion("shooting-torso-4")));
+        frames.add(new TextureRegion(textureAtlas.findRegion("shooting-torso-5")));
+        frames.add(new TextureRegion(textureAtlas.findRegion("shooting-torso-6")));
+        frames.add(new TextureRegion(textureAtlas.findRegion("shooting-torso-7")));
+        frames.add(new TextureRegion(textureAtlas.findRegion("shooting-torso-8")));
+        frames.add(new TextureRegion(textureAtlas.findRegion("shooting-torso-9")));
+        frames.add(new TextureRegion(textureAtlas.findRegion("shooting-torso-10")));
+        shootingTorso = new Animation<TextureRegion>(0.04f, frames);
 
         standingLegs = new TextureRegion(textureAtlas.findRegion("idle-legs"));
 
@@ -124,7 +142,15 @@ public class MarcoRossi {
 
     public void update(float delta){
         currentState = getState();
-        Gdx.app.log("velocity", body.getLinearVelocity().x + "");
+        stateTimer = previousState == currentState ? stateTimer + delta : 0;
+        previousState = currentState;
+
+        if(body.getLinearVelocity().x > 0){
+            isRunningRight = true;
+        }
+        else if(body.getLinearVelocity().x < 0){
+            isRunningRight = false;
+        }
 
         TextureRegion torsoRegion = getTorsoFrame();
         TextureRegion legsRegion = getLegsFrame();
@@ -132,22 +158,20 @@ public class MarcoRossi {
         torso.setBounds(0, 0, torsoRegion.getRegionWidth() * MetalSlug.MAP_SCALE, torsoRegion.getRegionHeight() * MetalSlug.MAP_SCALE);
         legs.setRegion(legsRegion);
         legs.setBounds(0, 0, legsRegion.getRegionWidth() * MetalSlug.MAP_SCALE, legsRegion.getRegionHeight() * MetalSlug.MAP_SCALE);
-        legs.setPosition(body.getPosition().x - legs.getWidth() / 2, body.getPosition().y - (BODY_RECTANGLE_HEIGHT / 2) * MetalSlug.MAP_SCALE);
-        if(torsoRegion.isFlipX()){
-            torso.setPosition(body.getPosition().x + (BODY_RECTANGLE_WIDTH / 2) * MetalSlug.MAP_SCALE - torsoRegion.getRegionWidth() * MetalSlug.MAP_SCALE + 1 * MetalSlug.MAP_SCALE, legs.getY() + legs.getHeight() - 7 * MetalSlug.MAP_SCALE);
-        }
-        else{
-            torso.setPosition(body.getPosition().x - (BODY_RECTANGLE_WIDTH / 2) * MetalSlug.MAP_SCALE - 1 * MetalSlug.MAP_SCALE, legs.getY() + legs.getHeight() - 7 * MetalSlug.MAP_SCALE);
-        }
-
-        stateTimer = previousState == currentState ? stateTimer + delta : 0;
-        previousState = currentState;
+        setLegsPosition(legsRegion);
+        setTorsoPosition(torsoRegion);
     }
 
     private TextureRegion getTorsoFrame(){
         TextureRegion region;
 
         switch (currentState){
+            case SHOOTING:
+                region = shootingTorso.getKeyFrame(stateTimer, false);
+                if(shootingTorso.isAnimationFinished(stateTimer)){
+                    isShooting = false;
+                }
+                break;
             case RUNNING:
                 region = runningTorso.getKeyFrame(stateTimer, true);
                 break;
@@ -157,10 +181,10 @@ public class MarcoRossi {
                 break;
         }
 
-        if(body.getLinearVelocity().x < 0 && !region.isFlipX()){
+        if((body.getLinearVelocity().x < 0 || !isRunningRight) && !region.isFlipX()){
             region.flip(true, false);
         }
-        else if(body.getLinearVelocity().x > 0 && region.isFlipX()){
+        else if((body.getLinearVelocity().x > 0 || isRunningRight)  && region.isFlipX()){
             region.flip(true, false);
         }
 
@@ -180,22 +204,64 @@ public class MarcoRossi {
                 break;
         }
 
-        if(body.getLinearVelocity().x < 0 && !region.isFlipX()){
+        if((body.getLinearVelocity().x < 0 || !isRunningRight) && !region.isFlipX()){
             region.flip(true, false);
         }
-        else if(body.getLinearVelocity().x > 0 && region.isFlipX()){
+        else if((body.getLinearVelocity().x > 0 || isRunningRight)  && region.isFlipX()){
             region.flip(true, false);
         }
 
         return region;
     }
 
-    private State getState(){
-        if(body.getLinearVelocity().x == 0){
-            return State.STANDING;
+    private void setTorsoPosition(TextureRegion torsoRegion){
+        float offsetX;
+        float offsetY;
+
+        offsetY = (-7) * MetalSlug.MAP_SCALE;
+
+        switch (currentState){
+            case SHOOTING:
+                offsetX = torsoRegion.isFlipX() ? 2 * MetalSlug.MAP_SCALE : (-2) * MetalSlug.MAP_SCALE;
+                offsetY = (-6) * MetalSlug.MAP_SCALE;
+                break;
+            case RUNNING:
+            case STANDING:
+            default:
+                offsetX = torsoRegion.isFlipX() ? 1 * MetalSlug.MAP_SCALE : (-1) * MetalSlug.MAP_SCALE;
+                offsetY = (-7) * MetalSlug.MAP_SCALE;
+        }
+
+        if(torsoRegion.isFlipX()){
+            torso.setPosition(body.getPosition().x + (BODY_RECTANGLE_WIDTH / 2) * MetalSlug.MAP_SCALE - torsoRegion.getRegionWidth() * MetalSlug.MAP_SCALE + offsetX, legs.getY() + legs.getHeight() + offsetY);
         }
         else{
+            torso.setPosition(body.getPosition().x - (BODY_RECTANGLE_WIDTH / 2) * MetalSlug.MAP_SCALE  + offsetX, legs.getY() + legs.getHeight() + offsetY);
+        }
+    }
+
+    private void setLegsPosition(TextureRegion legsRegion){
+        legs.setPosition(body.getPosition().x - legs.getWidth() / 2, body.getPosition().y - (BODY_RECTANGLE_HEIGHT / 2) * MetalSlug.MAP_SCALE);
+    }
+
+    public void shoot(){
+        if(isShooting){
+            stateTimer = 0;
+        }
+        else {
+            isShooting = true;
+        }
+    }
+
+    private State getState(){
+        if(isShooting){
+            return State.SHOOTING;
+        }
+        if(body.getLinearVelocity().x != 0){
             return State.RUNNING;
+        }
+        else{
+            return State.STANDING;
         }
     }
 }

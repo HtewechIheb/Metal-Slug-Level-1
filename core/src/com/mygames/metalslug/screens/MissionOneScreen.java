@@ -62,16 +62,19 @@ public class MissionOneScreen implements Screen {
 
     public void handleInput(float delta){
         if((player.body.getPosition().x - 13 * MetalSlug.MAP_SCALE) <= (camera.position.x - viewport.getWorldWidth() / 2)){
-            player.body.setLinearVelocity(new Vector2(0, 0));
+            player.body.setLinearVelocity(new Vector2(0, player.body.getLinearVelocity().y));
         }
-        if(Gdx.input.isKeyPressed(Input.Keys.RIGHT)){
-            player.body.setLinearVelocity(new Vector2(1.5f, 0));
+        if(Gdx.input.isKeyPressed(Input.Keys.RIGHT) && player.body.getLinearVelocity().x <= 1.5f){
+            player.body.applyLinearImpulse(new Vector2(0.3f, 0), player.body.getWorldCenter(), true);
         }
-        if(Gdx.input.isKeyPressed(Input.Keys.LEFT)){
-            player.body.setLinearVelocity(new Vector2(-1.5f, 0));
+        else if(Gdx.input.isKeyPressed(Input.Keys.LEFT) && player.body.getLinearVelocity().x >= -1.5f && (player.body.getPosition().x - 13 * MetalSlug.MAP_SCALE) > (camera.position.x - viewport.getWorldWidth() / 2)){
+            player.body.applyLinearImpulse(new Vector2(-0.3f, 0), player.body.getWorldCenter(), true);
         }
-        if(Gdx.input.isKeyJustPressed(Input.Keys.UP)){
-            player.body.setLinearVelocity(new Vector2(0, 1.5f));
+        else if(Gdx.input.isKeyJustPressed(Input.Keys.UP)){
+            player.body.applyLinearImpulse(new Vector2(0, 1.5f), player.body.getWorldCenter(), true);
+        }
+        else if(Gdx.input.isKeyJustPressed(Input.Keys.SPACE)){
+            player.shoot();
         }
 
     }

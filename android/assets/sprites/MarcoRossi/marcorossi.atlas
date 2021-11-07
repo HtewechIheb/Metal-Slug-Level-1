@@ -1,279 +1,349 @@
 
 marcorossi.png
-size: 512, 64
+size: 1024, 64
 format: RGBA8888
 filter: Nearest, Nearest
 repeat: none
 idle-legs
   rotate: false
-  xy: 263, 24
+  xy: 762, 46
   size: 21, 16
   orig: 21, 16
   offset: 0, 0
   index: -1
 idle-torso-pistol-1
   rotate: false
-  xy: 169, 33
+  xy: 375, 33
   size: 31, 29
   orig: 31, 29
   offset: 0, 0
   index: -1
 idle-torso-pistol-2
   rotate: false
-  xy: 103, 2
+  xy: 317, 2
   size: 31, 29
   orig: 31, 29
   offset: 0, 0
   index: -1
 idle-torso-pistol-3
   rotate: false
-  xy: 70, 2
+  xy: 284, 2
   size: 31, 29
   orig: 31, 29
   offset: 0, 0
   index: -1
 idle-torso-pistol-4
   rotate: false
-  xy: 136, 2
+  xy: 350, 2
   size: 31, 29
   orig: 31, 29
   offset: 0, 0
   index: -1
 running-legs-1
   rotate: false
-  xy: 441, 42
+  xy: 648, 42
   size: 21, 20
   orig: 21, 20
   offset: 0, 0
   index: -1
 running-legs-10
   rotate: false
-  xy: 262, 2
+  xy: 717, 42
   size: 20, 20
   orig: 20, 20
   offset: 0, 0
   index: -1
 running-legs-11
   rotate: false
-  xy: 422, 20
+  xy: 955, 42
   size: 15, 20
   orig: 15, 20
   offset: 0, 0
   index: -1
 running-legs-12
   rotate: false
-  xy: 349, 20
+  xy: 827, 42
   size: 18, 20
   orig: 18, 20
   offset: 0, 0
   index: -1
 running-legs-13
   rotate: false
-  xy: 487, 42
+  xy: 694, 42
   size: 21, 20
   orig: 21, 20
   offset: 0, 0
   index: -1
 running-legs-14
   rotate: false
-  xy: 415, 42
+  xy: 622, 42
   size: 24, 20
   orig: 24, 20
   offset: 0, 0
   index: -1
 running-legs-15
   rotate: false
-  xy: 439, 20
+  xy: 972, 42
   size: 14, 20
   orig: 14, 20
   offset: 0, 0
   index: -1
 running-legs-16
   rotate: false
-  xy: 284, 2
+  xy: 785, 42
   size: 19, 20
   orig: 19, 20
   offset: 0, 0
   index: -1
 running-legs-17
   rotate: false
-  xy: 387, 42
+  xy: 594, 42
   size: 26, 20
   orig: 26, 20
   offset: 0, 0
   index: -1
 running-legs-18
   rotate: false
-  xy: 369, 20
+  xy: 847, 42
   size: 16, 20
   orig: 16, 20
   offset: 0, 0
   index: -1
 running-legs-19
   rotate: false
-  xy: 305, 22
+  xy: 739, 44
   size: 21, 18
   orig: 21, 18
   offset: 0, 0
   index: -1
 running-legs-2
   rotate: false
-  xy: 329, 42
+  xy: 536, 42
   size: 28, 20
   orig: 28, 20
   offset: 0, 0
   index: -1
 running-legs-20
   rotate: false
-  xy: 305, 2
+  xy: 883, 44
   size: 18, 18
   orig: 18, 18
   offset: 0, 0
   index: -1
 running-legs-21
   rotate: false
-  xy: 455, 22
+  xy: 903, 44
   size: 16, 18
   orig: 16, 18
   offset: 0, 0
   index: -1
 running-legs-22
   rotate: false
-  xy: 473, 22
+  xy: 921, 44
   size: 15, 18
   orig: 15, 18
   offset: 0, 0
   index: -1
 running-legs-3
   rotate: false
-  xy: 296, 42
+  xy: 470, 42
   size: 31, 20
   orig: 31, 20
   offset: 0, 0
   index: -1
 running-legs-4
   rotate: false
-  xy: 328, 20
+  xy: 806, 42
   size: 19, 20
   orig: 19, 20
   offset: 0, 0
   index: -1
 running-legs-5
   rotate: false
-  xy: 405, 20
+  xy: 938, 42
   size: 15, 20
   orig: 15, 20
   offset: 0, 0
   index: -1
 running-legs-6
   rotate: false
-  xy: 387, 20
+  xy: 865, 42
   size: 16, 20
   orig: 16, 20
   offset: 0, 0
   index: -1
 running-legs-7
   rotate: false
-  xy: 464, 42
+  xy: 671, 42
   size: 21, 20
   orig: 21, 20
   offset: 0, 0
   index: -1
 running-legs-8
   rotate: false
-  xy: 359, 42
+  xy: 566, 42
   size: 26, 20
   orig: 26, 20
   offset: 0, 0
   index: -1
 running-legs-9
   rotate: false
-  xy: 263, 42
+  xy: 503, 42
   size: 31, 20
   orig: 31, 20
   offset: 0, 0
   index: -1
 running-torso-pistol-1
   rotate: false
-  xy: 36, 33
+  xy: 250, 2
   size: 32, 29
   orig: 32, 29
   offset: 0, 0
   index: -1
 running-torso-pistol-10
   rotate: false
-  xy: 70, 33
+  xy: 276, 33
   size: 31, 29
   orig: 31, 29
   offset: 0, 0
   index: -1
 running-torso-pistol-11
   rotate: false
-  xy: 136, 33
+  xy: 342, 33
   size: 31, 29
   orig: 31, 29
   offset: 0, 0
   index: -1
 running-torso-pistol-12
   rotate: false
-  xy: 103, 33
+  xy: 309, 33
   size: 31, 29
   orig: 31, 29
   offset: 0, 0
   index: -1
 running-torso-pistol-2
   rotate: false
-  xy: 169, 2
+  xy: 383, 2
   size: 30, 29
   orig: 30, 29
   offset: 0, 0
   index: -1
 running-torso-pistol-3
   rotate: false
-  xy: 233, 33
+  xy: 440, 33
   size: 28, 29
   orig: 28, 29
   offset: 0, 0
   index: -1
 running-torso-pistol-4
   rotate: false
-  xy: 233, 2
+  xy: 446, 2
   size: 27, 29
   orig: 27, 29
   offset: 0, 0
   index: -1
 running-torso-pistol-5
   rotate: false
-  xy: 202, 33
+  xy: 415, 2
   size: 29, 29
   orig: 29, 29
   offset: 0, 0
   index: -1
 running-torso-pistol-6
   rotate: false
-  xy: 201, 2
+  xy: 408, 33
   size: 30, 29
   orig: 30, 29
   offset: 0, 0
   index: -1
 running-torso-pistol-7
   rotate: false
-  xy: 2, 33
+  xy: 208, 33
   size: 32, 29
   orig: 32, 29
   offset: 0, 0
   index: -1
 running-torso-pistol-8
   rotate: false
-  xy: 36, 2
+  xy: 182, 2
   size: 32, 29
   orig: 32, 29
   offset: 0, 0
   index: -1
 running-torso-pistol-9
   rotate: false
-  xy: 2, 2
+  xy: 242, 33
   size: 32, 29
   orig: 32, 29
+  offset: 0, 0
+  index: -1
+shooting-torso-1
+  rotate: false
+  xy: 55, 2
+  size: 50, 29
+  orig: 50, 29
+  offset: 0, 0
+  index: -1
+shooting-torso-10
+  rotate: false
+  xy: 216, 2
+  size: 32, 29
+  orig: 32, 29
+  offset: 0, 0
+  index: -1
+shooting-torso-2
+  rotate: false
+  xy: 2, 2
+  size: 51, 29
+  orig: 51, 29
+  offset: 0, 0
+  index: -1
+shooting-torso-3
+  rotate: false
+  xy: 2, 33
+  size: 52, 29
+  orig: 52, 29
+  offset: 0, 0
+  index: -1
+shooting-torso-4
+  rotate: false
+  xy: 107, 2
+  size: 37, 29
+  orig: 37, 29
+  offset: 0, 0
+  index: -1
+shooting-torso-5
+  rotate: false
+  xy: 56, 33
+  size: 37, 29
+  orig: 37, 29
+  offset: 0, 0
+  index: -1
+shooting-torso-6
+  rotate: false
+  xy: 134, 33
+  size: 37, 29
+  orig: 37, 29
+  offset: 0, 0
+  index: -1
+shooting-torso-7
+  rotate: false
+  xy: 95, 33
+  size: 37, 29
+  orig: 37, 29
+  offset: 0, 0
+  index: -1
+shooting-torso-8
+  rotate: false
+  xy: 146, 2
+  size: 34, 29
+  orig: 34, 29
+  offset: 0, 0
+  index: -1
+shooting-torso-9
+  rotate: false
+  xy: 173, 33
+  size: 33, 29
+  orig: 33, 29
   offset: 0, 0
   index: -1

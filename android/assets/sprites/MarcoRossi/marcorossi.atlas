@@ -1,0 +1,279 @@
+
+marcorossi.png
+size: 512, 64
+format: RGBA8888
+filter: Nearest, Nearest
+repeat: none
+idle-legs
+  rotate: false
+  xy: 263, 24
+  size: 21, 16
+  orig: 21, 16
+  offset: 0, 0
+  index: -1
+idle-torso-pistol-1
+  rotate: false
+  xy: 169, 33
+  size: 31, 29
+  orig: 31, 29
+  offset: 0, 0
+  index: -1
+idle-torso-pistol-2
+  rotate: false
+  xy: 103, 2
+  size: 31, 29
+  orig: 31, 29
+  offset: 0, 0
+  index: -1
+idle-torso-pistol-3
+  rotate: false
+  xy: 70, 2
+  size: 31, 29
+  orig: 31, 29
+  offset: 0, 0
+  index: -1
+idle-torso-pistol-4
+  rotate: false
+  xy: 136, 2
+  size: 31, 29
+  orig: 31, 29
+  offset: 0, 0
+  index: -1
+running-legs-1
+  rotate: false
+  xy: 441, 42
+  size: 21, 20
+  orig: 21, 20
+  offset: 0, 0
+  index: -1
+running-legs-10
+  rotate: false
+  xy: 262, 2
+  size: 20, 20
+  orig: 20, 20
+  offset: 0, 0
+  index: -1
+running-legs-11
+  rotate: false
+  xy: 422, 20
+  size: 15, 20
+  orig: 15, 20
+  offset: 0, 0
+  index: -1
+running-legs-12
+  rotate: false
+  xy: 349, 20
+  size: 18, 20
+  orig: 18, 20
+  offset: 0, 0
+  index: -1
+running-legs-13
+  rotate: false
+  xy: 487, 42
+  size: 21, 20
+  orig: 21, 20
+  offset: 0, 0
+  index: -1
+running-legs-14
+  rotate: false
+  xy: 415, 42
+  size: 24, 20
+  orig: 24, 20
+  offset: 0, 0
+  index: -1
+running-legs-15
+  rotate: false
+  xy: 439, 20
+  size: 14, 20
+  orig: 14, 20
+  offset: 0, 0
+  index: -1
+running-legs-16
+  rotate: false
+  xy: 284, 2
+  size: 19, 20
+  orig: 19, 20
+  offset: 0, 0
+  index: -1
+running-legs-17
+  rotate: false
+  xy: 387, 42
+  size: 26, 20
+  orig: 26, 20
+  offset: 0, 0
+  index: -1
+running-legs-18
+  rotate: false
+  xy: 369, 20
+  size: 16, 20
+  orig: 16, 20
+  offset: 0, 0
+  index: -1
+running-legs-19
+  rotate: false
+  xy: 305, 22
+  size: 21, 18
+  orig: 21, 18
+  offset: 0, 0
+  index: -1
+running-legs-2
+  rotate: false
+  xy: 329, 42
+  size: 28, 20
+  orig: 28, 20
+  offset: 0, 0
+  index: -1
+running-legs-20
+  rotate: false
+  xy: 305, 2
+  size: 18, 18
+  orig: 18, 18
+  offset: 0, 0
+  index: -1
+running-legs-21
+  rotate: false
+  xy: 455, 22
+  size: 16, 18
+  orig: 16, 18
+  offset: 0, 0
+  index: -1
+running-legs-22
+  rotate: false
+  xy: 473, 22
+  size: 15, 18
+  orig: 15, 18
+  offset: 0, 0
+  index: -1
+running-legs-3
+  rotate: false
+  xy: 296, 42
+  size: 31, 20
+  orig: 31, 20
+  offset: 0, 0
+  index: -1
+running-legs-4
+  rotate: false
+  xy: 328, 20
+  size: 19, 20
+  orig: 19, 20
+  offset: 0, 0
+  index: -1
+running-legs-5
+  rotate: false
+  xy: 405, 20
+  size: 15, 20
+  orig: 15, 20
+  offset: 0, 0
+  index: -1
+running-legs-6
+  rotate: false
+  xy: 387, 20
+  size: 16, 20
+  orig: 16, 20
+  offset: 0, 0
+  index: -1
+running-legs-7
+  rotate: false
+  xy: 464, 42
+  size: 21, 20
+  orig: 21, 20
+  offset: 0, 0
+  index: -1
+running-legs-8
+  rotate: false
+  xy: 359, 42
+  size: 26, 20
+  orig: 26, 20
+  offset: 0, 0
+  index: -1
+running-legs-9
+  rotate: false
+  xy: 263, 42
+  size: 31, 20
+  orig: 31, 20
+  offset: 0, 0
+  index: -1
+running-torso-pistol-1
+  rotate: false
+  xy: 36, 33
+  size: 32, 29
+  orig: 32, 29
+  offset: 0, 0
+  index: -1
+running-torso-pistol-10
+  rotate: false
+  xy: 70, 33
+  size: 31, 29
+  orig: 31, 29
+  offset: 0, 0
+  index: -1
+running-torso-pistol-11
+  rotate: false
+  xy: 136, 33
+  size: 31, 29
+  orig: 31, 29
+  offset: 0, 0
+  index: -1
+running-torso-pistol-12
+  rotate: false
+  xy: 103, 33
+  size: 31, 29
+  orig: 31, 29
+  offset: 0, 0
+  index: -1
+running-torso-pistol-2
+  rotate: false
+  xy: 169, 2
+  size: 30, 29
+  orig: 30, 29
+  offset: 0, 0
+  index: -1
+running-torso-pistol-3
+  rotate: false
+  xy: 233, 33
+  size: 28, 29
+  orig: 28, 29
+  offset: 0, 0
+  index: -1
+running-torso-pistol-4
+  rotate: false
+  xy: 233, 2
+  size: 27, 29
+  orig: 27, 29
+  offset: 0, 0
+  index: -1
+running-torso-pistol-5
+  rotate: false
+  xy: 202, 33
+  size: 29, 29
+  orig: 29, 29
+  offset: 0, 0
+  index: -1
+running-torso-pistol-6
+  rotate: false
+  xy: 201, 2
+  size: 30, 29
+  orig: 30, 29
+  offset: 0, 0
+  index: -1
+running-torso-pistol-7
+  rotate: false
+  xy: 2, 33
+  size: 32, 29
+  orig: 32, 29
+  offset: 0, 0
+  index: -1
+running-torso-pistol-8
+  rotate: false
+  xy: 36, 2
+  size: 32, 29
+  orig: 32, 29
+  offset: 0, 0
+  index: -1
+running-torso-pistol-9
+  rotate: false
+  xy: 2, 2
+  size: 32, 29
+  orig: 32, 29
+  offset: 0, 0
+  index: -1

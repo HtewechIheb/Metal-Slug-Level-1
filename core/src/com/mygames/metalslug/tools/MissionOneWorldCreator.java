@@ -10,18 +10,26 @@ import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
+import com.badlogic.gdx.utils.Array;
 import com.mygames.metalslug.MetalSlug;
 import com.mygames.metalslug.screens.MissionOneScreen;
+import com.mygames.metalslug.sprites.MarcoRossi;
+import com.mygames.metalslug.sprites.PistolShot;
+import com.mygames.metalslug.sprites.Shot;
 
 public class MissionOneWorldCreator {
     private MissionOneScreen screen;
     private World world;
     private TiledMap map;
 
+    private Array<Shot> shots;
+
     public MissionOneWorldCreator(MissionOneScreen screen){
         this.screen = screen;
         world = screen.getWorld();
         map = screen.getMap();
+
+        shots = new Array<>();
     }
 
     public void createWorld(){
@@ -53,5 +61,17 @@ public class MissionOneWorldCreator {
             fixtureDef.shape = shape;
             body.createFixture(fixtureDef);
         }
+    }
+
+    public void createShot(Shot.ShotType type, MissionOneScreen screen, MarcoRossi player){
+        switch(type){
+            case PISTOL:
+            default:
+                shots.add(new PistolShot(screen, player));
+        }
+    }
+
+    public Array<Shot> getShots(){
+        return shots;
     }
 }

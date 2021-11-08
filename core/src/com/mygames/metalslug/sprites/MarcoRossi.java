@@ -18,17 +18,17 @@ import com.mygames.metalslug.MetalSlug;
 import com.mygames.metalslug.screens.MissionOneScreen;
 
 public class MarcoRossi {
-    private final float BODY_RECTANGLE_WIDTH = 18;
-    private final float BODY_RECTANGLE_HEIGHT = 26;
-    private final float BODY_CIRCLE_RADIUS = 9;
+    private final float BODY_RECTANGLE_WIDTH = 18f * MetalSlug.MAP_SCALE;
+    private final float BODY_RECTANGLE_HEIGHT = 26f * MetalSlug.MAP_SCALE;
+    private final float BODY_CIRCLE_RADIUS = 9f * MetalSlug.MAP_SCALE;
 
-    public Body body;
     public enum State {
         STANDING,
         RUNNING,
         SHOOTING
     }
 
+    private Body body;
     private MissionOneScreen screen;
     private World world;
     private TextureAtlas textureAtlas;
@@ -47,12 +47,14 @@ public class MarcoRossi {
     private boolean isRunningRight;
     private boolean isShooting;
 
+    private Shot shot;
+
     public MarcoRossi(MissionOneScreen screen){
         this.screen = screen;
         world = screen.getWorld();
         torso = new Sprite();
         legs = new Sprite();
-        textureAtlas = new TextureAtlas("sprites/MarcoRossi/marcorossi.atlas");
+        textureAtlas = screen.getTextureAtlas();
         currentState = State.STANDING;
         previousState = State.STANDING;
         stateTimer = 0;
@@ -121,9 +123,9 @@ public class MarcoRossi {
         CircleShape headShape = new CircleShape();
         PolygonShape bodyShape = new PolygonShape();
 
-        headShape.setRadius(BODY_CIRCLE_RADIUS * MetalSlug.MAP_SCALE);
-        headShape.setPosition(new Vector2(0, (BODY_RECTANGLE_HEIGHT / 2) * MetalSlug.MAP_SCALE));
-        bodyShape.setAsBox((BODY_RECTANGLE_WIDTH / 2) * MetalSlug.MAP_SCALE, (BODY_RECTANGLE_HEIGHT / 2) * MetalSlug.MAP_SCALE);
+        headShape.setRadius(BODY_CIRCLE_RADIUS);
+        headShape.setPosition(new Vector2(0, BODY_RECTANGLE_HEIGHT / 2));
+        bodyShape.setAsBox(BODY_RECTANGLE_WIDTH / 2, BODY_RECTANGLE_HEIGHT / 2);
 
         bodyDef.type = BodyDef.BodyType.DynamicBody;
         bodyDef.position.set(112 * MetalSlug.MAP_SCALE, 150 * MetalSlug.MAP_SCALE);
@@ -160,6 +162,10 @@ public class MarcoRossi {
         legs.setBounds(0, 0, legsRegion.getRegionWidth() * MetalSlug.MAP_SCALE, legsRegion.getRegionHeight() * MetalSlug.MAP_SCALE);
         setLegsPosition(legsRegion);
         setTorsoPosition(torsoRegion);
+
+        if(shot != null){
+            shot.update(delta);
+        }
     }
 
     private TextureRegion getTorsoFrame(){
@@ -233,15 +239,15 @@ public class MarcoRossi {
         }
 
         if(torsoRegion.isFlipX()){
-            torso.setPosition(body.getPosition().x + (BODY_RECTANGLE_WIDTH / 2) * MetalSlug.MAP_SCALE - torsoRegion.getRegionWidth() * MetalSlug.MAP_SCALE + offsetX, legs.getY() + legs.getHeight() + offsetY);
+            torso.setPosition(body.getPosition().x + (BODY_RECTANGLE_WIDTH / 2) - torsoRegion.getRegionWidth() * MetalSlug.MAP_SCALE + offsetX, legs.getY() + legs.getHeight() + offsetY);
         }
         else{
-            torso.setPosition(body.getPosition().x - (BODY_RECTANGLE_WIDTH / 2) * MetalSlug.MAP_SCALE  + offsetX, legs.getY() + legs.getHeight() + offsetY);
+            torso.setPosition(body.getPosition().x - (BODY_RECTANGLE_WIDTH / 2)  + offsetX, legs.getY() + legs.getHeight() + offsetY);
         }
     }
 
     private void setLegsPosition(TextureRegion legsRegion){
-        legs.setPosition(body.getPosition().x - legs.getWidth() / 2, body.getPosition().y - (BODY_RECTANGLE_HEIGHT / 2) * MetalSlug.MAP_SCALE);
+        legs.setPosition(body.getPosition().x - legs.getWidth() / 2, body.getPosition().y - (BODY_RECTANGLE_HEIGHT / 2));
     }
 
     public void shoot(){
@@ -251,6 +257,8 @@ public class MarcoRossi {
         else {
             isShooting = true;
         }
+
+        screen.getWorldCreator().createShot(Shot.ShotType.PISTOL, screen, this);
     }
 
     private State getState(){
@@ -263,5 +271,31 @@ public class MarcoRossi {
         else{
             return State.STANDING;
         }
+    }
+
+    // Get the end position of the sprite on the X axis
+    public float getShotX(){
+        TextureRegion shootingTexture = new TextureRegion(textureAtlas.findRegion("shooting-torso-3"));
+
+        if(isRunningRight){
+            return body.getPosition().x - (BODY_RECTANGLE_WIDTH / 2) + shootingTexture.getRegionWidth() * MetalSlug.MAP_SCALE;
+        }
+        else {
+            return body.getPosition().x + (BODY_RECTANGLE_WIDTH / 2) - shootingTexture.getRegionWidth() * MetalSlug.MAP_SCALE;
+        }
+    }
+
+    // Get the end position of the sprite on the Y axis
+    public float getShotY(){
+        //TextureRegion shootingTexture = new TextureRegion(textureAtlas.findRegion("shooting-torso-3"));
+        return body.getPosition().y + (BODY_RECTANGLE_WIDTH / 2) + BODY_CIRCLE_RADIUS - 1 * MetalSlug.MAP_SCALE;
+    }
+
+    public Body getBody(){
+        return body;
+    }
+
+    public boolean getIsRunningRight(){
+        return isRunningRight;
     }
 }

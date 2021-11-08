@@ -6,6 +6,7 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
@@ -25,6 +26,7 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.mygames.metalslug.MetalSlug;
 import com.mygames.metalslug.sprites.MarcoRossi;
+import com.mygames.metalslug.sprites.Shot;
 import com.mygames.metalslug.tools.MissionOneWorldCreator;
 
 public class MissionOneScreen implements Screen {
@@ -37,6 +39,7 @@ public class MissionOneScreen implements Screen {
     private World world;
     private Box2DDebugRenderer debugRenderer;
     private MissionOneWorldCreator worldCreator;
+    private TextureAtlas textureAtlas;
 
     private MarcoRossi player;
     private final Vector2 GRAVITY = new Vector2(0, -10);
@@ -56,22 +59,23 @@ public class MissionOneScreen implements Screen {
         debugRenderer = new Box2DDebugRenderer();
         worldCreator = new MissionOneWorldCreator(this);
         worldCreator.createWorld();
+        textureAtlas = new TextureAtlas("sprites/textures.atlas");
 
         player = new MarcoRossi(this);
     }
 
     public void handleInput(float delta){
-        if((player.body.getPosition().x - 13 * MetalSlug.MAP_SCALE) <= (camera.position.x - viewport.getWorldWidth() / 2)){
-            player.body.setLinearVelocity(new Vector2(0, player.body.getLinearVelocity().y));
+        if((player.getBody().getPosition().x - 13 * MetalSlug.MAP_SCALE) <= (camera.position.x - viewport.getWorldWidth() / 2)){
+            player.getBody().setLinearVelocity(new Vector2(0, player.getBody().getLinearVelocity().y));
         }
-        if(Gdx.input.isKeyPressed(Input.Keys.RIGHT) && player.body.getLinearVelocity().x <= 1.5f){
-            player.body.applyLinearImpulse(new Vector2(0.3f, 0), player.body.getWorldCenter(), true);
+        if(Gdx.input.isKeyPressed(Input.Keys.RIGHT) && player.getBody().getLinearVelocity().x <= 1.5f){
+            player.getBody().applyLinearImpulse(new Vector2(0.3f, 0), player.getBody().getWorldCenter(), true);
         }
-        else if(Gdx.input.isKeyPressed(Input.Keys.LEFT) && player.body.getLinearVelocity().x >= -1.5f && (player.body.getPosition().x - 13 * MetalSlug.MAP_SCALE) > (camera.position.x - viewport.getWorldWidth() / 2)){
-            player.body.applyLinearImpulse(new Vector2(-0.3f, 0), player.body.getWorldCenter(), true);
+        else if(Gdx.input.isKeyPressed(Input.Keys.LEFT) && player.getBody().getLinearVelocity().x >= -1.5f && (player.getBody().getPosition().x - 13 * MetalSlug.MAP_SCALE) > (camera.position.x - viewport.getWorldWidth() / 2)){
+            player.getBody().applyLinearImpulse(new Vector2(-0.3f, 0), player.getBody().getWorldCenter(), true);
         }
         else if(Gdx.input.isKeyJustPressed(Input.Keys.UP)){
-            player.body.applyLinearImpulse(new Vector2(0, 1.5f), player.body.getWorldCenter(), true);
+            player.getBody().applyLinearImpulse(new Vector2(0, 1.5f), player.getBody().getWorldCenter(), true);
         }
         else if(Gdx.input.isKeyJustPressed(Input.Keys.SPACE)){
             player.shoot();
@@ -83,11 +87,14 @@ public class MissionOneScreen implements Screen {
         handleInput(delta);
 
         world.step(1/60f, 6, 2);
-        if(camera.position.x < player.body.getPosition().x){
-            camera.position.x = player.body.getPosition().x;
+        if(camera.position.x < player.getBody().getPosition().x){
+            camera.position.x = player.getBody().getPosition().x;
             camera.update();
         }
 
+        for(Shot shot : worldCreator.getShots()){
+            shot.update(delta);
+        }
         player.update(delta);
         mapRenderer.setView(camera);
     }
@@ -106,6 +113,9 @@ public class MissionOneScreen implements Screen {
         game.batch.setProjectionMatrix(camera.combined);
         game.batch.begin();
         player.draw(game.batch);
+        for(Shot shot : worldCreator.getShots()){
+            shot.draw(game.batch);
+        }
         game.batch.end();
     }
 
@@ -140,5 +150,13 @@ public class MissionOneScreen implements Screen {
 
     public TiledMap getMap(){
         return map;
+    }
+
+    public TextureAtlas getTextureAtlas() {
+        return textureAtlas;
+    }
+
+    public MissionOneWorldCreator getWorldCreator(){
+        return worldCreator;
     }
 }

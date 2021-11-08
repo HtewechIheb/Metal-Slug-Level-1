@@ -17,6 +17,8 @@ import com.badlogic.gdx.utils.Array;
 import com.mygames.metalslug.MetalSlug;
 import com.mygames.metalslug.screens.MissionOneScreen;
 
+import java.util.EnumSet;
+
 public class MarcoRossi {
     private final float BODY_RECTANGLE_WIDTH = 18f * MetalSlug.MAP_SCALE;
     private final float BODY_RECTANGLE_HEIGHT = 26f * MetalSlug.MAP_SCALE;
@@ -40,9 +42,10 @@ public class MarcoRossi {
     private TextureRegion standingLegs;
     private Animation<TextureRegion> runningLegs;
 
-    private State currentState;
-    private State previousState;
-    private float stateTimer;
+    private EnumSet<State> currentState;
+    private EnumSet<State> previousState;
+    private float torsoStateTimer;
+    private float legsStateTimer;
 
     private boolean isRunningRight;
     private boolean isShooting;
@@ -55,9 +58,10 @@ public class MarcoRossi {
         torso = new Sprite();
         legs = new Sprite();
         textureAtlas = screen.getTextureAtlas();
-        currentState = State.STANDING;
-        previousState = State.STANDING;
-        stateTimer = 0;
+        currentState = EnumSet.of(State.STANDING);
+        previousState = EnumSet.of(State.STANDING);
+        torsoStateTimer = 0;
+        legsStateTimer = 0;
         isRunningRight = true;
         isShooting = false;
 
@@ -144,7 +148,8 @@ public class MarcoRossi {
 
     public void update(float delta){
         currentState = getState();
-        stateTimer = previousState == currentState ? stateTimer + delta : 0;
+        torsoStateTimer = previousState.containsAll(currentState) ? torsoStateTimer + delta : 0;
+        legsStateTimer = previousState.containsAll(currentState) ? legsStateTimer + delta : 0;
         previousState = currentState;
 
         if(body.getLinearVelocity().x > 0){
@@ -171,20 +176,17 @@ public class MarcoRossi {
     private TextureRegion getTorsoFrame(){
         TextureRegion region;
 
-        switch (currentState){
-            case SHOOTING:
-                region = shootingTorso.getKeyFrame(stateTimer, false);
-                if(shootingTorso.isAnimationFinished(stateTimer)){
-                    isShooting = false;
-                }
-                break;
-            case RUNNING:
-                region = runningTorso.getKeyFrame(stateTimer, true);
-                break;
-            case STANDING:
-            default:
-                region = standingTorso.getKeyFrame(stateTimer, true);
-                break;
+        if(currentState.contains(State.SHOOTING)){
+            region = shootingTorso.getKeyFrame(torsoStateTimer, false);
+            if(shootingTorso.isAnimationFinished(torsoStateTimer)){
+                isShooting = false;
+            }
+        }
+        else if(currentState.contains(State.RUNNING)){
+            region = runningTorso.getKeyFrame(torsoStateTimer, true);
+        }
+        else{
+            region = standingTorso.getKeyFrame(torsoStateTimer, true);
         }
 
         if((body.getLinearVelocity().x < 0 || !isRunningRight) && !region.isFlipX()){
@@ -200,14 +202,11 @@ public class MarcoRossi {
     private TextureRegion getLegsFrame(){
         TextureRegion region;
 
-        switch (currentState){
-            case RUNNING:
-                region = runningLegs.getKeyFrame(stateTimer, true);
-                break;
-            case STANDING:
-            default:
-                region = standingLegs;
-                break;
+        if(currentState.contains(State.RUNNING)){
+            region = runningLegs.getKeyFrame(legsStateTimer, true);
+        }
+        else{
+            region = standingLegs;
         }
 
         if((body.getLinearVelocity().x < 0 || !isRunningRight) && !region.isFlipX()){
@@ -226,16 +225,13 @@ public class MarcoRossi {
 
         offsetY = (-7) * MetalSlug.MAP_SCALE;
 
-        switch (currentState){
-            case SHOOTING:
-                offsetX = torsoRegion.isFlipX() ? 2 * MetalSlug.MAP_SCALE : (-2) * MetalSlug.MAP_SCALE;
-                offsetY = (-6) * MetalSlug.MAP_SCALE;
-                break;
-            case RUNNING:
-            case STANDING:
-            default:
-                offsetX = torsoRegion.isFlipX() ? 1 * MetalSlug.MAP_SCALE : (-1) * MetalSlug.MAP_SCALE;
-                offsetY = (-7) * MetalSlug.MAP_SCALE;
+        if(currentState.contains(State.SHOOTING)){
+            offsetX = torsoRegion.isFlipX() ? 2 * MetalSlug.MAP_SCALE : (-2) * MetalSlug.MAP_SCALE;
+            offsetY = (-6) * MetalSlug.MAP_SCALE;
+        }
+        else{
+            offsetX = torsoRegion.isFlipX() ? 1 * MetalSlug.MAP_SCALE : (-1) * MetalSlug.MAP_SCALE;
+            offsetY = (-7) * MetalSlug.MAP_SCALE;
         }
 
         if(torsoRegion.isFlipX()){
@@ -252,7 +248,7 @@ public class MarcoRossi {
 
     public void shoot(){
         if(isShooting){
-            stateTimer = 0;
+            torsoStateTimer = 0;
         }
         else {
             isShooting = true;
@@ -261,15 +257,18 @@ public class MarcoRossi {
         screen.getWorldCreator().createShot(Shot.ShotType.PISTOL, screen, this);
     }
 
-    private State getState(){
-        if(isShooting){
-            return State.SHOOTING;
+    private EnumSet<State> getState(){
+        if(isShooting && body.getLinearVelocity().x != 0){
+            return EnumSet.of(State.RUNNING, State.SHOOTING);
         }
-        if(body.getLinearVelocity().x != 0){
-            return State.RUNNING;
+        else if(isShooting){
+            return EnumSet.of(State.SHOOTING);
+        }
+        else if(body.getLinearVelocity().x != 0){
+            return EnumSet.of(State.RUNNING);
         }
         else{
-            return State.STANDING;
+            return EnumSet.of(State.STANDING);
         }
     }
 

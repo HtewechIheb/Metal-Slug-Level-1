@@ -27,7 +27,14 @@ public class MarcoRossi {
     public enum State {
         STANDING,
         RUNNING,
-        SHOOTING
+        SHOOTING,
+        JUMPING
+    }
+
+    public enum Weapon {
+        PISTOL,
+        MACHINEGUN,
+        FIREGUN
     }
 
     private Body body;
@@ -39,18 +46,26 @@ public class MarcoRossi {
     private Animation<TextureRegion> standingTorso;
     private Animation<TextureRegion> runningTorso;
     private Animation<TextureRegion> shootingTorso;
+    private Animation<TextureRegion> standingJumpingTorso;
+    private Animation<TextureRegion> runningJumpingTorso;
     private TextureRegion standingLegs;
     private Animation<TextureRegion> runningLegs;
+    private Animation<TextureRegion> standingJumpingLegs;
+    private Animation<TextureRegion> runningJumpingLegs;
 
     private EnumSet<State> currentState;
     private EnumSet<State> previousState;
     private float torsoStateTimer;
     private float legsStateTimer;
 
+    private boolean isRunning;
     private boolean isRunningRight;
     private boolean isShooting;
+    private boolean isJumping;
+    private boolean isRunningJumping;
+    private boolean isStandingJumping;
 
-    private Shot shot;
+    private Weapon weapon;
 
     public MarcoRossi(MissionOneScreen screen){
         this.screen = screen;
@@ -64,6 +79,10 @@ public class MarcoRossi {
         legsStateTimer = 0;
         isRunningRight = true;
         isShooting = false;
+        isJumping = false;
+        isRunningJumping = false;
+        isStandingJumping = false;
+        weapon = Weapon.PISTOL;
 
         Array<TextureRegion> frames = new Array<>();
         frames.add(new TextureRegion(textureAtlas.findRegion("idle-torso-pistol-1")));
@@ -109,11 +128,47 @@ public class MarcoRossi {
         frames.add(new TextureRegion(textureAtlas.findRegion("shooting-torso-9")));
         frames.add(new TextureRegion(textureAtlas.findRegion("shooting-torso-10")));
         shootingTorso = new Animation<TextureRegion>(0.04f, frames);
+        frames.clear();
+
+        frames.add(new TextureRegion(textureAtlas.findRegion("standing-jumping-torso-1")));
+        frames.add(new TextureRegion(textureAtlas.findRegion("standing-jumping-torso-2")));
+        frames.add(new TextureRegion(textureAtlas.findRegion("standing-jumping-torso-3")));
+        frames.add(new TextureRegion(textureAtlas.findRegion("standing-jumping-torso-4")));
+        frames.add(new TextureRegion(textureAtlas.findRegion("standing-jumping-torso-5")));
+        frames.add(new TextureRegion(textureAtlas.findRegion("standing-jumping-torso-6")));
+        standingJumpingTorso = new Animation<TextureRegion>(0.04f, frames);
+        frames.clear();
+
+        frames.add(new TextureRegion(textureAtlas.findRegion("standing-jumping-legs-1")));
+        frames.add(new TextureRegion(textureAtlas.findRegion("standing-jumping-legs-2")));
+        frames.add(new TextureRegion(textureAtlas.findRegion("standing-jumping-legs-3")));
+        frames.add(new TextureRegion(textureAtlas.findRegion("standing-jumping-legs-4")));
+        frames.add(new TextureRegion(textureAtlas.findRegion("standing-jumping-legs-5")));
+        frames.add(new TextureRegion(textureAtlas.findRegion("standing-jumping-legs-6")));
+        standingJumpingLegs = new Animation<TextureRegion>(0.04f, frames);
+        frames.clear();
+
+        frames.add(new TextureRegion(textureAtlas.findRegion("running-jumping-torso-1")));
+        frames.add(new TextureRegion(textureAtlas.findRegion("running-jumping-torso-2")));
+        frames.add(new TextureRegion(textureAtlas.findRegion("running-jumping-torso-3")));
+        frames.add(new TextureRegion(textureAtlas.findRegion("running-jumping-torso-4")));
+        frames.add(new TextureRegion(textureAtlas.findRegion("running-jumping-torso-5")));
+        frames.add(new TextureRegion(textureAtlas.findRegion("running-jumping-torso-6")));
+        runningJumpingTorso = new Animation<TextureRegion>(0.04f, frames);
+        frames.clear();
+
+        frames.add(new TextureRegion(textureAtlas.findRegion("running-jumping-legs-1")));
+        frames.add(new TextureRegion(textureAtlas.findRegion("running-jumping-legs-2")));
+        frames.add(new TextureRegion(textureAtlas.findRegion("running-jumping-legs-3")));
+        frames.add(new TextureRegion(textureAtlas.findRegion("running-jumping-legs-4")));
+        frames.add(new TextureRegion(textureAtlas.findRegion("running-jumping-legs-5")));
+        frames.add(new TextureRegion(textureAtlas.findRegion("running-jumping-legs-6")));
+        runningJumpingLegs = new Animation<TextureRegion>(0.04f, frames);
+        frames.clear();
 
         standingLegs = new TextureRegion(textureAtlas.findRegion("idle-legs"));
 
         defineCharacter();
-        defineSprites();
     }
 
     public void draw(SpriteBatch batch){
@@ -142,22 +197,20 @@ public class MarcoRossi {
         body.createFixture(fixtureDef);
     }
 
-    private void defineSprites(){
-
-    }
-
     public void update(float delta){
-        currentState = getState();
-        torsoStateTimer = previousState.containsAll(currentState) ? torsoStateTimer + delta : 0;
-        legsStateTimer = previousState.containsAll(currentState) ? legsStateTimer + delta : 0;
-        previousState = currentState;
-
+        isRunning = body.getLinearVelocity().x != 0;
         if(body.getLinearVelocity().x > 0){
             isRunningRight = true;
         }
         else if(body.getLinearVelocity().x < 0){
             isRunningRight = false;
         }
+        isJumping = body.getLinearVelocity().y != 0;
+
+        currentState = getState();
+        torsoStateTimer = previousState.equals(currentState) ? torsoStateTimer + delta : 0;
+        legsStateTimer = previousState.equals(currentState) ? legsStateTimer + delta : 0;
+        previousState = currentState;
 
         TextureRegion torsoRegion = getTorsoFrame();
         TextureRegion legsRegion = getLegsFrame();
@@ -165,18 +218,25 @@ public class MarcoRossi {
         torso.setBounds(0, 0, torsoRegion.getRegionWidth() * MetalSlug.MAP_SCALE, torsoRegion.getRegionHeight() * MetalSlug.MAP_SCALE);
         legs.setRegion(legsRegion);
         legs.setBounds(0, 0, legsRegion.getRegionWidth() * MetalSlug.MAP_SCALE, legsRegion.getRegionHeight() * MetalSlug.MAP_SCALE);
-        setLegsPosition(legsRegion);
-        setTorsoPosition(torsoRegion);
-
-        if(shot != null){
-            shot.update(delta);
-        }
+        setLegsPosition();
+        setTorsoPosition();
     }
 
     private TextureRegion getTorsoFrame(){
         TextureRegion region;
 
-        if(currentState.contains(State.SHOOTING)){
+        if(currentState.contains(State.JUMPING)){
+            if(isStandingJumping){
+                region = standingJumpingTorso.getKeyFrame(torsoStateTimer, false);
+            }
+            else if(isRunningJumping){
+                region = runningJumpingTorso.getKeyFrame(torsoStateTimer, false);
+            }
+            else{
+                region = standingTorso.getKeyFrame(torsoStateTimer, true);
+            }
+        }
+        else if(currentState.contains(State.SHOOTING)){
             region = shootingTorso.getKeyFrame(torsoStateTimer, false);
             if(shootingTorso.isAnimationFinished(torsoStateTimer)){
                 isShooting = false;
@@ -202,7 +262,18 @@ public class MarcoRossi {
     private TextureRegion getLegsFrame(){
         TextureRegion region;
 
-        if(currentState.contains(State.RUNNING)){
+        if(currentState.contains(State.JUMPING)){
+            if(isStandingJumping){
+                region = standingJumpingLegs.getKeyFrame(legsStateTimer, false);
+            }
+            else if(isRunningJumping){
+                region = runningJumpingLegs.getKeyFrame(legsStateTimer, false);
+            }
+            else{
+                region = standingLegs;
+            }
+        }
+        else if(currentState.contains(State.RUNNING)){
             region = runningLegs.getKeyFrame(legsStateTimer, true);
         }
         else{
@@ -219,31 +290,62 @@ public class MarcoRossi {
         return region;
     }
 
-    private void setTorsoPosition(TextureRegion torsoRegion){
+    private void setTorsoPosition(){
         float offsetX;
         float offsetY;
 
         offsetY = (-7) * MetalSlug.MAP_SCALE;
 
-        if(currentState.contains(State.SHOOTING)){
-            offsetX = torsoRegion.isFlipX() ? 2 * MetalSlug.MAP_SCALE : (-2) * MetalSlug.MAP_SCALE;
+        if(currentState.contains(State.JUMPING) && currentState.contains(State.RUNNING)){
+            offsetX = torso.isFlipX() ? 9 * MetalSlug.MAP_SCALE : (-9) * MetalSlug.MAP_SCALE;
+            offsetY = (-14) * MetalSlug.MAP_SCALE;
+        }
+        else if(currentState.contains(State.JUMPING)){
+            offsetX = torso.isFlipX() ? 9 * MetalSlug.MAP_SCALE : (-9) * MetalSlug.MAP_SCALE;
+            offsetY = (-3) * MetalSlug.MAP_SCALE;
+        }
+        else if(currentState.contains(State.SHOOTING)){
+            offsetX = torso.isFlipX() ? 1 * MetalSlug.MAP_SCALE : (-1) * MetalSlug.MAP_SCALE;
             offsetY = (-6) * MetalSlug.MAP_SCALE;
         }
         else{
-            offsetX = torsoRegion.isFlipX() ? 1 * MetalSlug.MAP_SCALE : (-1) * MetalSlug.MAP_SCALE;
+            offsetX = torso.isFlipX() ? 1 * MetalSlug.MAP_SCALE : (-1) * MetalSlug.MAP_SCALE;
             offsetY = (-7) * MetalSlug.MAP_SCALE;
         }
 
-        if(torsoRegion.isFlipX()){
-            torso.setPosition(body.getPosition().x + (BODY_RECTANGLE_WIDTH / 2) - torsoRegion.getRegionWidth() * MetalSlug.MAP_SCALE + offsetX, legs.getY() + legs.getHeight() + offsetY);
+        if(torso.isFlipX()){
+            torso.setPosition(body.getPosition().x + (BODY_RECTANGLE_WIDTH / 2) - torso.getRegionWidth() * MetalSlug.MAP_SCALE + offsetX, legs.getY() + legs.getHeight() + offsetY);
         }
         else{
             torso.setPosition(body.getPosition().x - (BODY_RECTANGLE_WIDTH / 2)  + offsetX, legs.getY() + legs.getHeight() + offsetY);
         }
     }
 
-    private void setLegsPosition(TextureRegion legsRegion){
-        legs.setPosition(body.getPosition().x - legs.getWidth() / 2, body.getPosition().y - (BODY_RECTANGLE_HEIGHT / 2));
+    private void setLegsPosition(){
+        float offsetX;
+        float offsetY;
+
+        offsetY = (-7) * MetalSlug.MAP_SCALE;
+
+        if(currentState.contains(State.JUMPING) && currentState.contains(State.RUNNING)){
+            offsetX = legs.isFlipX() ? 7 * MetalSlug.MAP_SCALE : (-7) * MetalSlug.MAP_SCALE;
+            offsetY = 0;
+        }
+       else if(currentState.contains(State.RUNNING)){
+            offsetX = legs.isFlipX() ? 6 * MetalSlug.MAP_SCALE : (-6) * MetalSlug.MAP_SCALE;
+            offsetY = 0;
+        }
+       else{
+           offsetX = legs.isFlipX() ? 1 * MetalSlug.MAP_SCALE : (-1) * MetalSlug.MAP_SCALE;
+           offsetY = 0;
+       }
+
+        if(legs.isFlipX()){
+            legs.setPosition(body.getPosition().x + (BODY_RECTANGLE_WIDTH / 2) - legs.getRegionWidth() * MetalSlug.MAP_SCALE + offsetX, body.getPosition().y - (BODY_RECTANGLE_HEIGHT / 2) + offsetY);
+        }
+        else{
+            legs.setPosition(body.getPosition().x - (BODY_RECTANGLE_WIDTH / 2)  + offsetX, body.getPosition().y - (BODY_RECTANGLE_HEIGHT / 2) + offsetY);
+        }
     }
 
     public void shoot(){
@@ -254,17 +356,51 @@ public class MarcoRossi {
             isShooting = true;
         }
 
-        screen.getWorldCreator().createShot(Shot.ShotType.PISTOL, screen, this);
+        switch (weapon){
+            case PISTOL:
+            default:
+                screen.getWorldCreator().createShot(Shot.ShotType.PISTOL, screen, this);
+        }
+    }
+
+    public void move(Vector2 vector){
+        body.applyLinearImpulse(vector, body.getWorldCenter(), true);
+    }
+
+    public void jump(Vector2 vector){
+        if(!isJumping){
+            isRunningJumping = false;
+            isStandingJumping = false;
+
+            if(isRunning){
+                isRunningJumping = true;
+            }
+            else{
+                isStandingJumping = true;
+            }
+
+            body.applyLinearImpulse(vector, body.getWorldCenter(), true);
+        }
+    }
+
+    public void stop(boolean stopX, boolean stopY){
+        body.setLinearVelocity(new Vector2(stopX ? 0 : body.getLinearVelocity().x, stopY ? 0 : body.getLinearVelocity().y));
     }
 
     private EnumSet<State> getState(){
-        if(isShooting && body.getLinearVelocity().x != 0){
+        if(isRunning && isJumping){
+            return EnumSet.of(State.JUMPING, State.RUNNING);
+        }
+        else if(isShooting && isRunning){
             return EnumSet.of(State.RUNNING, State.SHOOTING);
+        }
+        else if (isJumping){
+            return EnumSet.of(State.JUMPING);
         }
         else if(isShooting){
             return EnumSet.of(State.SHOOTING);
         }
-        else if(body.getLinearVelocity().x != 0){
+        else if(isRunning){
             return EnumSet.of(State.RUNNING);
         }
         else{

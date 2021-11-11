@@ -66,21 +66,20 @@ public class MissionOneScreen implements Screen {
 
     public void handleInput(float delta){
         if((player.getBody().getPosition().x - 13 * MetalSlug.MAP_SCALE) <= (camera.position.x - viewport.getWorldWidth() / 2)){
-            player.getBody().setLinearVelocity(new Vector2(0, player.getBody().getLinearVelocity().y));
+            player.stop(true, false);
         }
         if(Gdx.input.isKeyPressed(Input.Keys.RIGHT) && player.getBody().getLinearVelocity().x <= 1.5f){
-            player.getBody().applyLinearImpulse(new Vector2(0.3f, 0), player.getBody().getWorldCenter(), true);
+            player.move(new Vector2(0.3f, 0));
         }
         else if(Gdx.input.isKeyPressed(Input.Keys.LEFT) && player.getBody().getLinearVelocity().x >= -1.5f && (player.getBody().getPosition().x - 13 * MetalSlug.MAP_SCALE) > (camera.position.x - viewport.getWorldWidth() / 2)){
-            player.getBody().applyLinearImpulse(new Vector2(-0.3f, 0), player.getBody().getWorldCenter(), true);
+            player.move(new Vector2(-0.3f, 0));
         }
         else if(Gdx.input.isKeyJustPressed(Input.Keys.UP)){
-            player.getBody().applyLinearImpulse(new Vector2(0, 1.5f), player.getBody().getWorldCenter(), true);
+            player.jump(new Vector2(0, 5f));
         }
         else if(Gdx.input.isKeyJustPressed(Input.Keys.SPACE)){
             player.shoot();
         }
-
     }
 
     public void update(float delta){

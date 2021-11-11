@@ -25,6 +25,8 @@ public abstract class Shot {
     protected MarcoRossi player;
     protected MissionOneScreen screen;
     protected World world;
+    protected boolean playerLookingUp;
+    protected boolean playerRunningRight;
 
     protected TextureAtlas textureAtlas;
     protected Sprite sprite;
@@ -34,6 +36,8 @@ public abstract class Shot {
         this.screen = screen;
         this.world = screen.getWorld();
         this.player = player;
+        playerLookingUp = player.getIsLookingUp();
+        playerRunningRight = player.getIsRunningRight();
         textureAtlas = screen.getTextureAtlas();
         sprite = new Sprite();
 

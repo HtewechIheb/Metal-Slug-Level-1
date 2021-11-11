@@ -74,10 +74,13 @@ public class MissionOneScreen implements Screen {
         else if(Gdx.input.isKeyPressed(Input.Keys.LEFT) && player.getBody().getLinearVelocity().x >= -1.5f && (player.getBody().getPosition().x - 13 * MetalSlug.MAP_SCALE) > (camera.position.x - viewport.getWorldWidth() / 2)){
             player.move(new Vector2(-0.3f, 0));
         }
-        else if(Gdx.input.isKeyJustPressed(Input.Keys.UP)){
-            player.jump(new Vector2(0, 5f));
+        if(Gdx.input.isKeyPressed(Input.Keys.UP)){
+            player.lookup();
         }
-        else if(Gdx.input.isKeyJustPressed(Input.Keys.SPACE)){
+        if(Gdx.input.isKeyJustPressed(Input.Keys.C)){
+            player.jump(new Vector2(0, 3.5f));
+        }
+        if(Gdx.input.isKeyJustPressed(Input.Keys.SPACE)){
             player.shoot();
         }
     }

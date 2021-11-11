@@ -1,6 +1,7 @@
 package com.mygames.metalslug.sprites;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -28,7 +29,8 @@ public class MarcoRossi {
         STANDING,
         RUNNING,
         SHOOTING,
-        JUMPING
+        JUMPING,
+        LOOKINGUP
     }
 
     public enum Weapon {
@@ -48,6 +50,8 @@ public class MarcoRossi {
     private Animation<TextureRegion> shootingTorso;
     private Animation<TextureRegion> standingJumpingTorso;
     private Animation<TextureRegion> runningJumpingTorso;
+    private Animation<TextureRegion> lookingUpTorso;
+    private Animation<TextureRegion> reversingLookUpTorso;
     private TextureRegion standingLegs;
     private Animation<TextureRegion> runningLegs;
     private Animation<TextureRegion> standingJumpingLegs;
@@ -64,6 +68,13 @@ public class MarcoRossi {
     private boolean isJumping;
     private boolean isRunningJumping;
     private boolean isStandingJumping;
+    private boolean isLookingUp;
+    private boolean isReversingLookUp;
+
+    private boolean runningDisabled;
+    private boolean shootingDisabled;
+    private boolean lookingUpDisabled;
+    private boolean jumpingDisabled;
 
     private Weapon weapon;
 
@@ -82,6 +93,12 @@ public class MarcoRossi {
         isJumping = false;
         isRunningJumping = false;
         isStandingJumping = false;
+        isLookingUp = false;
+        isReversingLookUp = false;
+        runningDisabled = false;
+        shootingDisabled = false;
+        lookingUpDisabled = false;
+        jumpingDisabled = false;
         weapon = Weapon.PISTOL;
 
         Array<TextureRegion> frames = new Array<>();
@@ -166,6 +183,15 @@ public class MarcoRossi {
         runningJumpingLegs = new Animation<TextureRegion>(0.04f, frames);
         frames.clear();
 
+        frames.add(new TextureRegion(textureAtlas.findRegion("looking-up-pistol-1")));
+        frames.add(new TextureRegion(textureAtlas.findRegion("looking-up-pistol-2")));
+        frames.add(new TextureRegion(textureAtlas.findRegion("looking-up-pistol-3")));
+        frames.add(new TextureRegion(textureAtlas.findRegion("looking-up-pistol-4")));
+        lookingUpTorso = new Animation<TextureRegion>(0.04f, frames);
+        frames.reverse();
+        reversingLookUpTorso = new Animation<TextureRegion>(0.04f, frames);
+        frames.clear();
+
         standingLegs = new TextureRegion(textureAtlas.findRegion("idle-legs"));
 
         defineCharacter();
@@ -207,6 +233,11 @@ public class MarcoRossi {
         }
         isJumping = body.getLinearVelocity().y != 0;
 
+        runningDisabled = isLookingUp;
+        shootingDisabled = isJumping;
+        lookingUpDisabled = isRunning || isJumping;
+        jumpingDisabled = isLookingUp;
+
         currentState = getState();
         torsoStateTimer = previousState.equals(currentState) ? torsoStateTimer + delta : 0;
         legsStateTimer = previousState.equals(currentState) ? legsStateTimer + delta : 0;
@@ -225,7 +256,24 @@ public class MarcoRossi {
     private TextureRegion getTorsoFrame(){
         TextureRegion region;
 
-        if(currentState.contains(State.JUMPING)){
+        if(currentState.contains(State.LOOKINGUP)){
+            if(!Gdx.input.isKeyPressed(Input.Keys.UP) && !isReversingLookUp){
+                isReversingLookUp = true;
+                torsoStateTimer = 0;
+            }
+
+            if(isReversingLookUp){
+                region = reversingLookUpTorso.getKeyFrame(torsoStateTimer, false);
+                if(reversingLookUpTorso.isAnimationFinished(torsoStateTimer)){
+                    isReversingLookUp = false;
+                    isLookingUp = false;
+                }
+            }
+            else{
+                region = lookingUpTorso.getKeyFrame(torsoStateTimer, false);
+            }
+        }
+        else if(currentState.contains(State.JUMPING)){
             if(isStandingJumping){
                 region = standingJumpingTorso.getKeyFrame(torsoStateTimer, false);
             }
@@ -296,7 +344,11 @@ public class MarcoRossi {
 
         offsetY = (-7) * MetalSlug.MAP_SCALE;
 
-        if(currentState.contains(State.JUMPING) && currentState.contains(State.RUNNING)){
+        if(currentState.contains(State.LOOKINGUP)){
+            offsetX = torso.isFlipX() ? 1 * MetalSlug.MAP_SCALE : (-1) * MetalSlug.MAP_SCALE;
+            offsetY = (-2) * MetalSlug.MAP_SCALE;
+        }
+        else if(currentState.contains(State.JUMPING) && currentState.contains(State.RUNNING)){
             offsetX = torso.isFlipX() ? 9 * MetalSlug.MAP_SCALE : (-9) * MetalSlug.MAP_SCALE;
             offsetY = (-14) * MetalSlug.MAP_SCALE;
         }
@@ -349,26 +401,30 @@ public class MarcoRossi {
     }
 
     public void shoot(){
-        if(isShooting){
-            torsoStateTimer = 0;
-        }
-        else {
-            isShooting = true;
-        }
+        if(!shootingDisabled){
+            if(isShooting){
+                torsoStateTimer = 0;
+            }
+            else {
+                isShooting = true;
+            }
 
-        switch (weapon){
-            case PISTOL:
-            default:
-                screen.getWorldCreator().createShot(Shot.ShotType.PISTOL, screen, this);
+            switch (weapon){
+                case PISTOL:
+                default:
+                    screen.getWorldCreator().createShot(Shot.ShotType.PISTOL, screen, this);
+            }
         }
     }
 
     public void move(Vector2 vector){
-        body.applyLinearImpulse(vector, body.getWorldCenter(), true);
+        if(!runningDisabled){
+            body.applyLinearImpulse(vector, body.getWorldCenter(), true);
+        }
     }
 
     public void jump(Vector2 vector){
-        if(!isJumping){
+        if(!jumpingDisabled && !isJumping){
             isRunningJumping = false;
             isStandingJumping = false;
 
@@ -387,7 +443,16 @@ public class MarcoRossi {
         body.setLinearVelocity(new Vector2(stopX ? 0 : body.getLinearVelocity().x, stopY ? 0 : body.getLinearVelocity().y));
     }
 
+    public void lookup(){
+        if(!lookingUpDisabled && !isLookingUp){
+            isLookingUp = true;
+        }
+    }
+
     private EnumSet<State> getState(){
+        if(isLookingUp){
+            return EnumSet.of(State.LOOKINGUP);
+        }
         if(isRunning && isJumping){
             return EnumSet.of(State.JUMPING, State.RUNNING);
         }
@@ -410,20 +475,32 @@ public class MarcoRossi {
 
     // Get the end position of the sprite on the X axis
     public float getShotX(){
-        TextureRegion shootingTexture = new TextureRegion(textureAtlas.findRegion("shooting-torso-3"));
+        TextureRegion straightShootingTexture = new TextureRegion(textureAtlas.findRegion("shooting-torso-3"));
 
-        if(isRunningRight){
-            return body.getPosition().x - (BODY_RECTANGLE_WIDTH / 2) + shootingTexture.getRegionWidth() * MetalSlug.MAP_SCALE;
+        if(isLookingUp){
+            return body.getPosition().x;
+        }
+        else if(isRunningRight){
+            return body.getPosition().x - (BODY_RECTANGLE_WIDTH / 2) + straightShootingTexture.getRegionWidth() * MetalSlug.MAP_SCALE;
         }
         else {
-            return body.getPosition().x + (BODY_RECTANGLE_WIDTH / 2) - shootingTexture.getRegionWidth() * MetalSlug.MAP_SCALE;
+            return body.getPosition().x + (BODY_RECTANGLE_WIDTH / 2) - straightShootingTexture.getRegionWidth() * MetalSlug.MAP_SCALE;
         }
     }
 
     // Get the end position of the sprite on the Y axis
     public float getShotY(){
+        float offsetY = (-4) * MetalSlug.MAP_SCALE;
+
+        TextureRegion upShootingTexture = new TextureRegion(textureAtlas.findRegion("looking-up-pistol-4"));
+
+        if(isLookingUp){
+            return torso.getY() + upShootingTexture.getRegionHeight() * MetalSlug.MAP_SCALE;
+        }
+        else {
+            return body.getPosition().y + (BODY_RECTANGLE_WIDTH / 2) + BODY_CIRCLE_RADIUS + offsetY;
+        }
         //TextureRegion shootingTexture = new TextureRegion(textureAtlas.findRegion("shooting-torso-3"));
-        return body.getPosition().y + (BODY_RECTANGLE_WIDTH / 2) + BODY_CIRCLE_RADIUS - 1 * MetalSlug.MAP_SCALE;
     }
 
     public Body getBody(){
@@ -432,5 +509,9 @@ public class MarcoRossi {
 
     public boolean getIsRunningRight(){
         return isRunningRight;
+    }
+
+    public boolean getIsLookingUp(){
+        return isLookingUp;
     }
 }

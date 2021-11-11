@@ -3,6 +3,7 @@ package com.mygames.metalslug.sprites;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
@@ -20,8 +21,12 @@ public class PistolShot extends Shot {
         sprite.setRegion(new TextureRegion(textureAtlas.findRegion("pistol-shot")));
         sprite.setBounds(0, 0, SHOT_WIDTH, SHOT_HEIGHT);
 
-        if(player.getIsRunningRight()){
-            body.setLinearVelocity(new Vector2(3f, 0));
+        if(playerLookingUp){
+            sprite.rotate(90f);
+            body.setLinearVelocity(new Vector2(0f, 3f));
+        }
+        else if(playerRunningRight){
+            body.setLinearVelocity(new Vector2(0f, 0));
         }
         else{
             body.setLinearVelocity(new Vector2(-3f, 0));
@@ -33,7 +38,11 @@ public class PistolShot extends Shot {
         FixtureDef fixtureDef = new FixtureDef();
 
         bodyDef.type = BodyDef.BodyType.DynamicBody;
-        bodyDef.position.set(player.getShotX(), player.getShotY() - (SHOT_HEIGHT / 2));
+        if(playerLookingUp){
+            bodyDef.angle = 90 * MathUtils.degreesToRadians;
+        }
+
+        bodyDef.position.set(player.getShotX(), player.getShotY());
         bodyDef.gravityScale = 0f;
 
         body = world.createBody(bodyDef);
@@ -47,7 +56,12 @@ public class PistolShot extends Shot {
     }
 
     public void update(float delta){
-        sprite.setPosition(body.getPosition().x - sprite.getWidth() / 2, body.getPosition().y - sprite.getHeight() / 2);
+        if(playerLookingUp){
+            sprite.setPosition(body.getPosition().x + sprite.getHeight() / 2, body.getPosition().y - sprite.getWidth() / 2);
+        }
+        else {
+            sprite.setPosition(body.getPosition().x - sprite.getWidth() / 2, body.getPosition().y - sprite.getHeight() / 2);
+        }
     }
 
     public void draw(SpriteBatch batch){

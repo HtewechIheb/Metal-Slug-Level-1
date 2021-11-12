@@ -26,7 +26,7 @@ public class PistolShot extends Shot {
             body.setLinearVelocity(new Vector2(0f, 3f));
         }
         else if(playerRunningRight){
-            body.setLinearVelocity(new Vector2(0f, 0));
+            body.setLinearVelocity(new Vector2(3f, 0));
         }
         else{
             body.setLinearVelocity(new Vector2(-3f, 0));
@@ -42,7 +42,12 @@ public class PistolShot extends Shot {
             bodyDef.angle = 90 * MathUtils.degreesToRadians;
         }
 
-        bodyDef.position.set(player.getShotX(), player.getShotY());
+        if(playerLookingUp){
+            bodyDef.position.set(player.getShotX() + SHOT_HEIGHT / 4, player.getShotY());
+        }
+        else {
+            bodyDef.position.set(player.getShotX(), player.getShotY() - SHOT_HEIGHT / 2);
+        }
         bodyDef.gravityScale = 0f;
 
         body = world.createBody(bodyDef);

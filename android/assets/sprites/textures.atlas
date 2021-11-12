@@ -1,474 +1,565 @@
 
 textures.png
-size: 2048, 64
+size: 1024, 128
 format: RGBA8888
 filter: Nearest, Nearest
 repeat: none
 idle-legs
   rotate: false
-  xy: 1577, 46
+  xy: 984, 60
   size: 21, 16
   orig: 21, 16
   offset: 0, 0
   index: -1
+idle-looking-up-pistol-1
+  rotate: false
+  xy: 961, 100
+  size: 29, 26
+  orig: 29, 26
+  offset: 0, 0
+  index: -1
+idle-looking-up-pistol-2
+  rotate: false
+  xy: 837, 100
+  size: 29, 26
+  orig: 29, 26
+  offset: 0, 0
+  index: -1
+idle-looking-up-pistol-3
+  rotate: false
+  xy: 689, 42
+  size: 29, 26
+  orig: 29, 26
+  offset: 0, 0
+  index: -1
+idle-looking-up-pistol-4
+  rotate: false
+  xy: 899, 100
+  size: 29, 26
+  orig: 29, 26
+  offset: 0, 0
+  index: -1
 idle-torso-pistol-1
   rotate: false
-  xy: 453, 2
+  xy: 703, 97
   size: 31, 29
   orig: 31, 29
   offset: 0, 0
   index: -1
 idle-torso-pistol-2
   rotate: false
-  xy: 420, 2
+  xy: 670, 97
   size: 31, 29
   orig: 31, 29
   offset: 0, 0
   index: -1
 idle-torso-pistol-3
   rotate: false
-  xy: 412, 33
+  xy: 619, 66
   size: 31, 29
   orig: 31, 29
   offset: 0, 0
   index: -1
 idle-torso-pistol-4
   rotate: false
-  xy: 445, 33
+  xy: 652, 66
   size: 31, 29
   orig: 31, 29
   offset: 0, 0
   index: -1
 looking-up-pistol-1
   rotate: false
-  xy: 521, 2
-  size: 33, 32
-  orig: 33, 32
+  xy: 736, 101
+  size: 33, 25
+  orig: 33, 25
   offset: 0, 0
   index: -1
 looking-up-pistol-2
   rotate: false
-  xy: 486, 2
-  size: 33, 32
-  orig: 33, 32
+  xy: 685, 70
+  size: 33, 25
+  orig: 33, 25
   offset: 0, 0
   index: -1
 looking-up-pistol-3
   rotate: false
-  xy: 556, 2
-  size: 32, 32
-  orig: 32, 32
+  xy: 771, 102
+  size: 32, 24
+  orig: 32, 24
   offset: 0, 0
   index: -1
-looking-up-pistol-4
+looking-up-shooting-pistol-1
   rotate: false
-  xy: 590, 2
-  size: 27, 32
-  orig: 27, 32
+  xy: 27, 62
+  size: 23, 64
+  orig: 23, 64
+  offset: 0, 0
+  index: -1
+looking-up-shooting-pistol-10
+  rotate: false
+  xy: 805, 99
+  size: 30, 27
+  orig: 30, 27
+  offset: 0, 0
+  index: -1
+looking-up-shooting-pistol-2
+  rotate: false
+  xy: 52, 62
+  size: 23, 64
+  orig: 23, 64
+  offset: 0, 0
+  index: -1
+looking-up-shooting-pistol-3
+  rotate: false
+  xy: 2, 60
+  size: 23, 66
+  orig: 23, 66
+  offset: 0, 0
+  index: -1
+looking-up-shooting-pistol-4
+  rotate: false
+  xy: 594, 56
+  size: 23, 39
+  orig: 23, 39
+  offset: 0, 0
+  index: -1
+looking-up-shooting-pistol-5
+  rotate: false
+  xy: 567, 57
+  size: 25, 38
+  orig: 25, 38
+  offset: 0, 0
+  index: -1
+looking-up-shooting-pistol-6
+  rotate: false
+  xy: 511, 55
+  size: 25, 40
+  orig: 25, 40
+  offset: 0, 0
+  index: -1
+looking-up-shooting-pistol-7
+  rotate: false
+  xy: 2, 17
+  size: 24, 41
+  orig: 24, 41
+  offset: 0, 0
+  index: -1
+looking-up-shooting-pistol-8
+  rotate: false
+  xy: 482, 55
+  size: 27, 40
+  orig: 27, 40
+  offset: 0, 0
+  index: -1
+looking-up-shooting-pistol-9
+  rotate: false
+  xy: 538, 58
+  size: 27, 37
+  orig: 27, 37
   offset: 0, 0
   index: -1
 pistol-shot
   rotate: false
-  xy: 1600, 52
+  xy: 2, 5
   size: 24, 10
   orig: 24, 10
   offset: 0, 0
   index: -1
 running-jumping-legs-1
   rotate: false
-  xy: 903, 41
+  xy: 619, 43
   size: 33, 21
   orig: 33, 21
   offset: 0, 0
   index: -1
 running-jumping-legs-2
   rotate: false
-  xy: 1008, 41
+  xy: 838, 77
   size: 33, 21
   orig: 33, 21
   offset: 0, 0
   index: -1
 running-jumping-legs-3
   rotate: false
-  xy: 973, 41
+  xy: 751, 50
   size: 33, 21
   orig: 33, 21
   offset: 0, 0
   index: -1
 running-jumping-legs-4
   rotate: false
-  xy: 868, 41
+  xy: 28, 2
   size: 33, 21
   orig: 33, 21
   offset: 0, 0
   index: -1
 running-jumping-legs-5
   rotate: false
-  xy: 1043, 41
+  xy: 805, 76
   size: 31, 21
   orig: 31, 21
   offset: 0, 0
   index: -1
 running-jumping-legs-6
   rotate: false
-  xy: 938, 41
+  xy: 654, 43
   size: 33, 21
   orig: 33, 21
   offset: 0, 0
   index: -1
 running-jumping-torso-1
   rotate: false
-  xy: 667, 27
+  xy: 312, 60
   size: 32, 35
   orig: 32, 35
   offset: 0, 0
   index: -1
 running-jumping-torso-2
   rotate: false
-  xy: 803, 27
+  xy: 448, 60
   size: 32, 35
   orig: 32, 35
   offset: 0, 0
   index: -1
 running-jumping-torso-3
   rotate: false
-  xy: 735, 27
+  xy: 380, 60
   size: 32, 35
   orig: 32, 35
   offset: 0, 0
   index: -1
 running-jumping-torso-4
   rotate: false
-  xy: 633, 27
+  xy: 28, 25
   size: 32, 35
   orig: 32, 35
   offset: 0, 0
   index: -1
 running-jumping-torso-5
   rotate: false
-  xy: 769, 27
+  xy: 414, 60
   size: 32, 35
   orig: 32, 35
   offset: 0, 0
   index: -1
 running-jumping-torso-6
   rotate: false
-  xy: 701, 27
+  xy: 346, 60
   size: 32, 35
   orig: 32, 35
   offset: 0, 0
   index: -1
 running-legs-1
   rotate: false
-  xy: 1076, 42
+  xy: 906, 78
   size: 31, 20
   orig: 31, 20
   offset: 0, 0
   index: -1
 running-legs-10
   rotate: false
-  xy: 1109, 42
+  xy: 939, 78
   size: 31, 20
   orig: 31, 20
   offset: 0, 0
   index: -1
 running-legs-11
   rotate: false
-  xy: 1307, 42
+  xy: 885, 56
   size: 31, 20
   orig: 31, 20
   offset: 0, 0
   index: -1
 running-legs-2
   rotate: false
-  xy: 1274, 42
+  xy: 852, 55
   size: 31, 20
   orig: 31, 20
   offset: 0, 0
   index: -1
 running-legs-3
   rotate: false
-  xy: 1175, 42
+  xy: 786, 54
   size: 31, 20
   orig: 31, 20
   offset: 0, 0
   index: -1
 running-legs-4
   rotate: false
-  xy: 1373, 42
+  xy: 951, 56
   size: 31, 20
   orig: 31, 20
   offset: 0, 0
   index: -1
 running-legs-5
   rotate: false
-  xy: 1241, 42
+  xy: 819, 54
   size: 31, 20
   orig: 31, 20
   offset: 0, 0
   index: -1
 running-legs-6
   rotate: false
-  xy: 1142, 42
+  xy: 972, 78
   size: 31, 20
   orig: 31, 20
   offset: 0, 0
   index: -1
 running-legs-7
   rotate: false
-  xy: 1340, 42
+  xy: 918, 56
   size: 31, 20
   orig: 31, 20
   offset: 0, 0
   index: -1
 running-legs-8
   rotate: false
-  xy: 1208, 42
+  xy: 751, 28
   size: 31, 20
   orig: 31, 20
   offset: 0, 0
   index: -1
 running-legs-9
   rotate: false
-  xy: 1406, 42
+  xy: 873, 78
   size: 31, 20
   orig: 31, 20
   offset: 0, 0
   index: -1
 running-torso-pistol-1
   rotate: false
-  xy: 344, 33
+  xy: 534, 97
   size: 32, 29
   orig: 32, 29
   offset: 0, 0
   index: -1
 running-torso-pistol-10
   rotate: false
-  xy: 182, 2
+  xy: 244, 66
   size: 32, 29
   orig: 32, 29
   offset: 0, 0
   index: -1
 running-torso-pistol-11
   rotate: false
-  xy: 318, 2
+  xy: 500, 97
   size: 32, 29
   orig: 32, 29
   offset: 0, 0
   index: -1
 running-torso-pistol-12
   rotate: false
-  xy: 216, 2
+  xy: 278, 66
   size: 32, 29
   orig: 32, 29
   offset: 0, 0
   index: -1
 running-torso-pistol-2
   rotate: false
-  xy: 242, 33
+  xy: 330, 97
   size: 32, 29
   orig: 32, 29
   offset: 0, 0
   index: -1
 running-torso-pistol-3
   rotate: false
-  xy: 378, 33
+  xy: 602, 97
   size: 32, 29
   orig: 32, 29
   offset: 0, 0
   index: -1
 running-torso-pistol-4
   rotate: false
-  xy: 284, 2
+  xy: 432, 97
   size: 32, 29
   orig: 32, 29
   offset: 0, 0
   index: -1
 running-torso-pistol-5
   rotate: false
-  xy: 208, 33
+  xy: 296, 97
   size: 32, 29
   orig: 32, 29
   offset: 0, 0
   index: -1
 running-torso-pistol-6
   rotate: false
-  xy: 352, 2
+  xy: 568, 97
   size: 32, 29
   orig: 32, 29
   offset: 0, 0
   index: -1
 running-torso-pistol-7
   rotate: false
-  xy: 250, 2
+  xy: 364, 97
   size: 32, 29
   orig: 32, 29
   offset: 0, 0
   index: -1
 running-torso-pistol-8
   rotate: false
-  xy: 386, 2
+  xy: 636, 97
   size: 32, 29
   orig: 32, 29
   offset: 0, 0
   index: -1
 running-torso-pistol-9
   rotate: false
-  xy: 310, 33
+  xy: 466, 97
   size: 32, 29
   orig: 32, 29
   offset: 0, 0
   index: -1
 shooting-torso-1
   rotate: false
-  xy: 55, 2
+  xy: 131, 97
   size: 50, 29
   orig: 50, 29
   offset: 0, 0
   index: -1
 shooting-torso-10
   rotate: false
-  xy: 276, 33
+  xy: 398, 97
   size: 32, 29
   orig: 32, 29
   offset: 0, 0
   index: -1
 shooting-torso-2
   rotate: false
-  xy: 2, 2
+  xy: 77, 66
   size: 51, 29
   orig: 51, 29
   offset: 0, 0
   index: -1
 shooting-torso-3
   rotate: false
-  xy: 2, 33
+  xy: 77, 97
   size: 52, 29
   orig: 52, 29
   offset: 0, 0
   index: -1
 shooting-torso-4
   rotate: false
-  xy: 107, 2
+  xy: 169, 66
   size: 37, 29
   orig: 37, 29
   offset: 0, 0
   index: -1
 shooting-torso-5
   rotate: false
-  xy: 56, 33
+  xy: 130, 66
   size: 37, 29
   orig: 37, 29
   offset: 0, 0
   index: -1
 shooting-torso-6
   rotate: false
-  xy: 134, 33
+  xy: 222, 97
   size: 37, 29
   orig: 37, 29
   offset: 0, 0
   index: -1
 shooting-torso-7
   rotate: false
-  xy: 95, 33
+  xy: 183, 97
   size: 37, 29
   orig: 37, 29
   offset: 0, 0
   index: -1
 shooting-torso-8
   rotate: false
-  xy: 146, 2
+  xy: 208, 66
   size: 34, 29
   orig: 34, 29
   offset: 0, 0
   index: -1
 shooting-torso-9
   rotate: false
-  xy: 173, 33
+  xy: 261, 97
   size: 33, 29
   orig: 33, 29
   offset: 0, 0
   index: -1
 standing-jumping-legs-1
   rotate: false
-  xy: 1485, 38
+  xy: 86, 2
   size: 21, 24
   orig: 21, 24
   offset: 0, 0
   index: -1
 standing-jumping-legs-2
   rotate: false
-  xy: 1439, 38
+  xy: 782, 76
   size: 21, 24
   orig: 21, 24
   offset: 0, 0
   index: -1
 standing-jumping-legs-3
   rotate: false
-  xy: 1531, 38
+  xy: 132, 2
   size: 21, 24
   orig: 21, 24
   offset: 0, 0
   index: -1
 standing-jumping-legs-4
   rotate: false
-  xy: 1462, 38
+  xy: 63, 2
   size: 21, 24
   orig: 21, 24
   offset: 0, 0
   index: -1
 standing-jumping-legs-5
   rotate: false
-  xy: 1554, 38
+  xy: 155, 2
   size: 21, 24
   orig: 21, 24
   offset: 0, 0
   index: -1
 standing-jumping-legs-6
   rotate: false
-  xy: 1508, 38
+  xy: 109, 2
   size: 21, 24
   orig: 21, 24
   offset: 0, 0
   index: -1
 standing-jumping-torso-1
   rotate: false
-  xy: 602, 36
+  xy: 720, 41
   size: 29, 26
   orig: 29, 26
   offset: 0, 0
   index: -1
 standing-jumping-torso-2
   rotate: false
-  xy: 540, 36
+  xy: 992, 100
   size: 29, 26
   orig: 29, 26
   offset: 0, 0
   index: -1
 standing-jumping-torso-3
   rotate: false
-  xy: 478, 36
+  xy: 868, 100
   size: 29, 26
   orig: 29, 26
   offset: 0, 0
   index: -1
 standing-jumping-torso-4
   rotate: false
-  xy: 571, 36
+  xy: 720, 69
   size: 29, 26
   orig: 29, 26
   offset: 0, 0
   index: -1
 standing-jumping-torso-5
   rotate: false
-  xy: 509, 36
+  xy: 930, 100
   size: 29, 26
   orig: 29, 26
   offset: 0, 0
   index: -1
 standing-jumping-torso-6
   rotate: false
-  xy: 837, 36
+  xy: 751, 73
   size: 29, 26
   orig: 29, 26
   offset: 0, 0

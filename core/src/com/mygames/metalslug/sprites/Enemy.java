@@ -16,8 +16,6 @@ public abstract class Enemy {
         this.screen = screen;
         this.world = screen.getWorld();
         this.position = position;
-
-        defineEnemy();
     }
 
     protected abstract void defineEnemy();
@@ -27,5 +25,4 @@ public abstract class Enemy {
     public abstract void draw(SpriteBatch batch);
 
     public abstract void kill();
-
 }

@@ -15,19 +15,19 @@ public class PistolShot extends Shot {
     private final float SHOT_WIDTH = 12f * MetalSlug.MAP_SCALE;
     private final float SHOT_HEIGHT = 6f * MetalSlug.MAP_SCALE;
 
-    private boolean toBeDestoryed;
+    private boolean toBeDestoryed = false;
 
     public PistolShot(MissionOneScreen screen, MarcoRossi player){
         super(ShotType.PISTOL, screen, player);
 
-        toBeDestoryed = false;
-
         sprite.setRegion(new TextureRegion(textureAtlas.findRegion("pistol-shot")));
         sprite.setBounds(0, 0, SHOT_WIDTH, SHOT_HEIGHT);
 
+        defineShot();
+
         if(playerLookingUp){
             sprite.rotate(90f);
-            body.setLinearVelocity(new Vector2(0f, 3f));
+            body.setLinearVelocity(new Vector2(0f, 0f));
         }
         else if(playerRunningRight){
             body.setLinearVelocity(new Vector2(3f, 0));
@@ -47,13 +47,17 @@ public class PistolShot extends Shot {
         }
 
         if(playerLookingUp){
-            bodyDef.position.set(player.getShotX() + SHOT_HEIGHT / 4, player.getShotY());
+            if(playerRunningRight){
+                bodyDef.position.set(player.getShotX() + (SHOT_HEIGHT / 4), player.getShotY());
+            }
+            else {
+                bodyDef.position.set(player.getShotX() - (SHOT_HEIGHT / 4), player.getShotY());
+            }
         }
         else {
-            bodyDef.position.set(player.getShotX(), player.getShotY() - SHOT_HEIGHT / 2);
+            bodyDef.position.set(player.getShotX(), player.getShotY() - (SHOT_HEIGHT / 2));
         }
         bodyDef.gravityScale = 0f;
-
         body = world.createBody(bodyDef);
 
         PolygonShape shape = new PolygonShape();
@@ -61,7 +65,6 @@ public class PistolShot extends Shot {
         fixtureDef.shape = shape;
         fixtureDef.filter.categoryBits = MetalSlug.SHOT_BITS;
         fixtureDef.isSensor = true;
-
         body.createFixture(fixtureDef).setUserData(this);
     }
 

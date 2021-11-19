@@ -131,14 +131,14 @@ public class MissionOneScreen implements Screen {
         debugRenderer.render(world, camera.combined);
         game.batch.setProjectionMatrix(camera.combined);
         game.batch.begin();
-        for(Shot shot : worldCreator.getShots()){
-            shot.draw(game.batch);
+        for(Hostage hostage : worldCreator.getHostages()){
+            hostage.draw(game.batch);
         }
         for(Enemy enemy : worldCreator.getEnemies()){
             enemy.draw(game.batch);
         }
-        for(Hostage hostage : worldCreator.getHostages()){
-            hostage.draw(game.batch);
+        for(Shot shot : worldCreator.getShots()){
+            shot.draw(game.batch);
         }
         player.draw(game.batch);
         game.batch.end();

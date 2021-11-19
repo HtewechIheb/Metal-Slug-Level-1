@@ -20,11 +20,11 @@ public abstract class Shot {
     }
 
     protected Body body;
-
     protected ShotType type;
     protected MarcoRossi player;
     protected MissionOneScreen screen;
     protected World world;
+
     protected boolean playerLookingUp;
     protected boolean playerRunningRight;
 
@@ -40,8 +40,6 @@ public abstract class Shot {
         playerRunningRight = player.getIsRunningRight();
         textureAtlas = screen.getShotsTextureAtlas();
         sprite = new Sprite();
-
-        defineShot();
     }
 
     protected abstract void defineShot();
@@ -51,12 +49,4 @@ public abstract class Shot {
     public abstract void draw(SpriteBatch batch);
 
     public abstract void destroy();
-
-    public ShotType getType(){
-        return type;
-    }
-
-    public Body getBody(){
-        return body;
-    }
 }

@@ -1,6 +1,7 @@
 package com.mygames.metalslug.tools;
 
 import com.badlogic.gdx.maps.MapObject;
+import com.badlogic.gdx.maps.MapProperties;
 import com.badlogic.gdx.maps.objects.RectangleMapObject;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.objects.TiledMapTileMapObject;
@@ -21,6 +22,8 @@ import com.mygames.metalslug.sprites.MarcoRossi;
 import com.mygames.metalslug.sprites.PistolShot;
 import com.mygames.metalslug.sprites.Shot;
 import com.mygames.metalslug.sprites.Soldier;
+
+import java.util.Properties;
 
 public class MissionOneWorldCreator {
     private MissionOneScreen screen;
@@ -75,14 +78,52 @@ public class MissionOneWorldCreator {
 
         for(RectangleMapObject object: map.getLayers().get(4).getObjects().getByType(RectangleMapObject.class)){
             Rectangle rectangle = object.getRectangle();
+            MapProperties properties = object.getProperties();
+            Soldier.State state = null;
+            boolean isRunningRight = false;
 
-            enemies.add(new Soldier(screen, new Vector2(rectangle.getX() * MetalSlug.MAP_SCALE, rectangle.getY() * MetalSlug.MAP_SCALE)));
+            if(properties.containsKey("state")){
+                String stateProp = properties.get("state", String.class);
+                switch(stateProp){
+                    case "chatting":
+                        state = Soldier.State.CHATTING;
+                        break;
+                    case "sneaking":
+                        state = Soldier.State.SNEAKING;
+                        break;
+                    case "scared":
+                        state = Soldier.State.SCARED;
+                        break;
+                    case "running":
+                    default:
+                        state = Soldier.State.RUNNING;
+                }
+            }
+            if(properties.containsKey("isRunningRight")){
+                isRunningRight = properties.get("isRunningRight", boolean.class);
+            }
+
+            enemies.add(new Soldier(screen, new Vector2(rectangle.getX() * MetalSlug.MAP_SCALE, rectangle.getY() * MetalSlug.MAP_SCALE), state, isRunningRight));
         }
 
         for(RectangleMapObject object: map.getLayers().get(5).getObjects().getByType(RectangleMapObject.class)){
             Rectangle rectangle = object.getRectangle();
+            MapProperties properties = object.getProperties();
+            Hobo.State state = null;
 
-            hostages.add(new Hobo(screen, new Vector2(rectangle.getX() * MetalSlug.MAP_SCALE, rectangle.getY() * MetalSlug.MAP_SCALE)));
+            if(properties.containsKey("state")){
+                String stateProp = properties.get("state", String.class);
+                switch(stateProp){
+                    case "hanging":
+                        state = Hobo.State.HANGING;
+                        break;
+                    case "sitting":
+                    default:
+                        state = Hobo.State.SITTING;
+                }
+            }
+
+            hostages.add(new Hobo(screen, new Vector2(rectangle.getX() * MetalSlug.MAP_SCALE, rectangle.getY() * MetalSlug.MAP_SCALE), state));
         }
     }
 

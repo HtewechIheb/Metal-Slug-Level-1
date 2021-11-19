@@ -17,78 +17,133 @@ import com.mygames.metalslug.MetalSlug;
 import com.mygames.metalslug.screens.MissionOneScreen;
 
 import java.util.EnumSet;
+import java.util.Random;
 
 public class Soldier extends Enemy{
     private final float BODY_RECTANGLE_WIDTH = 18f * MetalSlug.MAP_SCALE;
-    private final float BODY_RECTANGLE_HEIGHT = 26f * MetalSlug.MAP_SCALE;
+    private final float BODY_RECTANGLE_HEIGHT = 30f * MetalSlug.MAP_SCALE;
     private final float BODY_CIRCLE_RADIUS = 9f * MetalSlug.MAP_SCALE;
 
     public enum State {
+        CHATTING,
+        SNEAKING,
         RUNNING,
+        SCARED,
         DYING
     }
 
     private TextureAtlas textureAtlas;
     private Sprite sprite;
+    private float bodyWidth;
+    private float bodyHeight;
 
+    private Array<Animation<TextureRegion>> chatting;
+    private Animation<TextureRegion> sneaking;
     private Animation<TextureRegion> running;
+    private Animation<TextureRegion> scared;
     private Animation<TextureRegion> dying;
+
+    private int chattingIndex;
 
     private EnumSet<State> currentState;
     private EnumSet<State> previousState;
     private float stateTimer;
     private float deathTimer;
 
-    private boolean isRunning;
-    private boolean isRunningRight;
+    private boolean isChatting = false;
+    private boolean isSneaking = false;
+    private boolean isRunning = false;
+    private boolean isRunningRight = false;
+    private boolean isScared = false;
+    private boolean toBeDestroyed = false;
+    private boolean isDying = false;
+    private boolean dead = false;
 
-    private boolean toBeDestroyed;
-    private boolean isDying;
-    private boolean dead;
+    private Random randomizer;
 
-    public Soldier(MissionOneScreen screen, Vector2 position){
+    public Soldier(MissionOneScreen screen, Vector2 position, State state, boolean isRunningRight){
         super(screen, position);
 
         textureAtlas = screen.getSoldierTextureAtlas();
         sprite = new Sprite();
         stateTimer = 0;
         deathTimer = 0;
-        currentState = EnumSet.of(State.RUNNING);
-        previousState = EnumSet.of(State.RUNNING);
-        //isRunning = false;
-        isRunningRight = false;
-        toBeDestroyed = false;
-        isDying = false;
-        dead = false;
+        bodyWidth = 0;
+        bodyHeight = 0;
+        currentState = EnumSet.of(state);
+        previousState = EnumSet.of(state);
+        isChatting = state == State.CHATTING;
+        isSneaking = state == State.SNEAKING;
+        isScared = state == State.SCARED;
+        isRunning = state == State.RUNNING;
+        this.isRunningRight = isRunningRight;
+        randomizer = new Random();
 
+        defineEnemy();
+        defineAnimations();
+    }
+
+    private void defineAnimations(){
+        byte i;
         Array<TextureRegion> frames = new Array<>();
-        frames.add(new TextureRegion(textureAtlas.findRegion("running-1")));
-        frames.add(new TextureRegion(textureAtlas.findRegion("running-2")));
-        frames.add(new TextureRegion(textureAtlas.findRegion("running-3")));
-        frames.add(new TextureRegion(textureAtlas.findRegion("running-4")));
-        frames.add(new TextureRegion(textureAtlas.findRegion("running-5")));
-        frames.add(new TextureRegion(textureAtlas.findRegion("running-6")));
-        frames.add(new TextureRegion(textureAtlas.findRegion("running-7")));
-        frames.add(new TextureRegion(textureAtlas.findRegion("running-8")));
-        frames.add(new TextureRegion(textureAtlas.findRegion("running-9")));
-        frames.add(new TextureRegion(textureAtlas.findRegion("running-10")));
-        frames.add(new TextureRegion(textureAtlas.findRegion("running-11")));
-        frames.add(new TextureRegion(textureAtlas.findRegion("running-12")));
-        running = new Animation<TextureRegion>(0.04f, frames);
+        Array<TextureRegion> framesBuffer = new Array<>();
+
+        for(i = 1; i < 13; i++){
+            frames.add(new TextureRegion(textureAtlas.findRegion(String.format("running-%d", i))));
+        }
+        running = new Animation<TextureRegion>(0.06f, frames);
         frames.clear();
 
-        frames.add(new TextureRegion(textureAtlas.findRegion("death-1-1")));
-        frames.add(new TextureRegion(textureAtlas.findRegion("death-1-2")));
-        frames.add(new TextureRegion(textureAtlas.findRegion("death-1-3")));
-        frames.add(new TextureRegion(textureAtlas.findRegion("death-1-4")));
-        frames.add(new TextureRegion(textureAtlas.findRegion("death-1-5")));
-        frames.add(new TextureRegion(textureAtlas.findRegion("death-1-6")));
-        frames.add(new TextureRegion(textureAtlas.findRegion("death-1-7")));
-        frames.add(new TextureRegion(textureAtlas.findRegion("death-1-8")));
-        frames.add(new TextureRegion(textureAtlas.findRegion("death-1-9")));
-        frames.add(new TextureRegion(textureAtlas.findRegion("death-1-10")));
-        frames.add(new TextureRegion(textureAtlas.findRegion("death-1-11")));
+        for(i = 1; i < 12; i++){
+            frames.add(new TextureRegion(textureAtlas.findRegion(String.format("death-1-%d", i))));
+        }
         dying = new Animation<TextureRegion>(0.06f, frames);
+        frames.clear();
+
+        chatting = new Array<>();
+        frames.add(new TextureRegion(textureAtlas.findRegion("chatting-1")));
+        framesBuffer.add(new TextureRegion(textureAtlas.findRegion("chatting-2")));
+        framesBuffer.add(new TextureRegion(textureAtlas.findRegion("chatting-3")));
+        frames.addAll(framesBuffer);
+        frames.add(new TextureRegion(textureAtlas.findRegion("chatting-4")));
+        framesBuffer.reverse();
+        frames.addAll(framesBuffer);
+        chatting.add(new Animation<TextureRegion>(0.12f, frames));
+        frames.clear();
+        framesBuffer.clear();
+
+        frames.add(new TextureRegion(textureAtlas.findRegion("chatting-5")));
+        framesBuffer.add(new TextureRegion(textureAtlas.findRegion("chatting-6")));
+        framesBuffer.add(new TextureRegion(textureAtlas.findRegion("chatting-7")));
+        frames.addAll(framesBuffer);
+        frames.add(new TextureRegion(textureAtlas.findRegion("chatting-8")));
+        framesBuffer.reverse();
+        frames.addAll(framesBuffer);
+        chatting.add(new Animation<TextureRegion>(0.12f, frames));
+        frames.clear();
+        framesBuffer.clear();
+
+        frames.add(new TextureRegion(textureAtlas.findRegion("chatting-9")));
+        framesBuffer.add(new TextureRegion(textureAtlas.findRegion("chatting-10")));
+        framesBuffer.add(new TextureRegion(textureAtlas.findRegion("chatting-11")));
+        frames.addAll(framesBuffer);
+        frames.add(new TextureRegion(textureAtlas.findRegion("chatting-12")));
+        framesBuffer.reverse();
+        frames.addAll(framesBuffer);
+        chatting.add(new Animation<TextureRegion>(0.12f, frames));
+        frames.clear();
+        framesBuffer.clear();
+
+        for(i = 1; i < 13; i++){
+            frames.add(new TextureRegion(textureAtlas.findRegion(String.format("sneaking-%d", i))));
+        }
+        sneaking = new Animation<TextureRegion>(0.2f, frames);
+        frames.clear();
+
+        for(i = 1; i < 12; i++){
+            frames.add(new TextureRegion(textureAtlas.findRegion(String.format("scared-%d", i))));
+        }
+        scared = new Animation<TextureRegion>(0.1f, frames);
         frames.clear();
     }
 
@@ -99,13 +154,16 @@ public class Soldier extends Enemy{
         CircleShape headShape = new CircleShape();
         PolygonShape bodyShape = new PolygonShape();
 
+        bodyWidth = BODY_RECTANGLE_WIDTH;
+        bodyHeight = BODY_RECTANGLE_HEIGHT;
+
         bodyDef.type = BodyDef.BodyType.DynamicBody;
-        bodyDef.position.set(position.x + (BODY_RECTANGLE_WIDTH / 2), position.y + (BODY_RECTANGLE_HEIGHT / 2));
+        bodyDef.position.set(position.x + (bodyWidth / 2), position.y + (bodyHeight / 2));
         body = world.createBody(bodyDef);
 
         headShape.setRadius(BODY_CIRCLE_RADIUS);
-        headShape.setPosition(new Vector2(0, BODY_RECTANGLE_HEIGHT / 2));
-        bodyShape.setAsBox(BODY_RECTANGLE_WIDTH / 2, BODY_RECTANGLE_HEIGHT / 2);
+        headShape.setPosition(new Vector2(0, bodyHeight / 2));
+        bodyShape.setAsBox(bodyWidth / 2, bodyHeight / 2);
 
         fixtureDef.shape = headShape;
         fixtureDef.filter.categoryBits = MetalSlug.ENEMY_BITS;
@@ -131,7 +189,7 @@ public class Soldier extends Enemy{
             stateTimer = previousState.equals(currentState) ? stateTimer + delta : 0;
 
             if(!toBeDestroyed){
-                isRunning = true;
+
             }
 
             TextureRegion region = getFrame();
@@ -143,10 +201,37 @@ public class Soldier extends Enemy{
         }
     }
 
+    @Override
+    public void draw(SpriteBatch batch){
+        sprite.draw(batch);
+    }
+
     private TextureRegion getFrame(){
         TextureRegion region;
 
-        if(currentState.contains(State.DYING)){
+        if(currentState.contains(State.CHATTING)){
+            region = chatting.get(chattingIndex).getKeyFrame(stateTimer, false);
+            if(chatting.get(chattingIndex).isAnimationFinished(stateTimer)){
+                stateTimer = 0;
+                int randomValue = randomizer.nextInt(10);
+                if(randomValue == 9){
+                    chattingIndex = 2;
+                }
+                else if(randomValue == 8){
+                    chattingIndex = 0;
+                }
+                else {
+                    chattingIndex = 1;
+                }
+            }
+        }
+        else if(currentState.contains(State.SNEAKING)){
+            region = sneaking.getKeyFrame(stateTimer, true);
+        }
+        else if(currentState.contains(State.SCARED)){
+            region = scared.getKeyFrame(stateTimer, true);
+        }
+        else if(currentState.contains(State.DYING)){
             region = dying.getKeyFrame(stateTimer, false);
             if(dying.isAnimationFinished(stateTimer)){
                 dead = true;
@@ -173,8 +258,20 @@ public class Soldier extends Enemy{
         float offsetX;
         float offsetY;
 
-        if(currentState.contains(State.RUNNING)){
-            offsetX = sprite.isFlipX() ? 0 * MetalSlug.MAP_SCALE : 0 * MetalSlug.MAP_SCALE;
+        if(currentState.contains(State.CHATTING)){
+            offsetX = sprite.isFlipX() ? 10 * MetalSlug.MAP_SCALE : (-10) * MetalSlug.MAP_SCALE;
+            offsetY = 0 * MetalSlug.MAP_SCALE;
+        }
+        else if(currentState.contains(State.SNEAKING)){
+            offsetX = sprite.isFlipX() ? 12 * MetalSlug.MAP_SCALE : (-12) * MetalSlug.MAP_SCALE;
+            offsetY = 0 * MetalSlug.MAP_SCALE;
+        }
+        else if(currentState.contains(State.SCARED)){
+            offsetX = sprite.isFlipX() ? 12 * MetalSlug.MAP_SCALE : (-12) * MetalSlug.MAP_SCALE;
+            offsetY = 0 * MetalSlug.MAP_SCALE;
+        }
+        else if(currentState.contains(State.RUNNING)){
+            offsetX = sprite.isFlipX() ? 2 * MetalSlug.MAP_SCALE : (-2) * MetalSlug.MAP_SCALE;
             offsetY = 0 * MetalSlug.MAP_SCALE;
         }
         else{
@@ -183,10 +280,10 @@ public class Soldier extends Enemy{
         }
 
         if(sprite.isFlipX()){
-            sprite.setPosition(body.getPosition().x + (BODY_RECTANGLE_WIDTH / 2) - sprite.getRegionWidth() * MetalSlug.MAP_SCALE + offsetX, body.getPosition().y - (BODY_RECTANGLE_HEIGHT / 2) + offsetY);
+            sprite.setPosition(body.getPosition().x + (bodyWidth / 2) - sprite.getRegionWidth() * MetalSlug.MAP_SCALE + offsetX, body.getPosition().y - (bodyHeight / 2) + offsetY);
         }
         else{
-            sprite.setPosition(body.getPosition().x - (BODY_RECTANGLE_WIDTH / 2)  + offsetX, body.getPosition().y - (BODY_RECTANGLE_HEIGHT / 2) + offsetY);
+            sprite.setPosition(body.getPosition().x - (bodyWidth / 2)  + offsetX, body.getPosition().y - (bodyHeight / 2) + offsetY);
         }
     }
 
@@ -197,17 +294,21 @@ public class Soldier extends Enemy{
             state.add(State.DYING);
         }
         else{
+            if(isChatting){
+                state.add(State.CHATTING);
+            }
+            if(isSneaking){
+                state.add(State.SNEAKING);
+            }
+            if(isScared){
+                state.add(State.SCARED);
+            }
             if(isRunning){
                 state.add(State.RUNNING);
             }
         }
 
         return state;
-    }
-
-    @Override
-    public void draw(SpriteBatch batch){
-        sprite.draw(batch);
     }
 
     public void kill(){

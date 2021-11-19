@@ -1,5 +1,5 @@
 
-textures.png
+player.png
 size: 1024, 128
 format: RGBA8888
 filter: Nearest, Nearest
@@ -158,13 +158,6 @@ looking-up-shooting-pistol-9
   orig: 27, 37
   offset: 0, 0
   index: -1
-pistol-shot
-  rotate: false
-  xy: 2, 5
-  size: 24, 10
-  orig: 24, 10
-  offset: 0, 0
-  index: -1
 running-jumping-legs-1
   rotate: false
   xy: 619, 43
@@ -251,77 +244,77 @@ running-jumping-torso-6
   index: -1
 running-legs-1
   rotate: false
-  xy: 906, 78
+  xy: 873, 78
   size: 31, 20
   orig: 31, 20
   offset: 0, 0
   index: -1
 running-legs-10
   rotate: false
-  xy: 939, 78
+  xy: 906, 78
   size: 31, 20
   orig: 31, 20
   offset: 0, 0
   index: -1
 running-legs-11
   rotate: false
-  xy: 885, 56
+  xy: 852, 55
   size: 31, 20
   orig: 31, 20
   offset: 0, 0
   index: -1
 running-legs-2
   rotate: false
-  xy: 852, 55
+  xy: 819, 54
   size: 31, 20
   orig: 31, 20
   offset: 0, 0
   index: -1
 running-legs-3
   rotate: false
-  xy: 786, 54
+  xy: 972, 78
   size: 31, 20
   orig: 31, 20
   offset: 0, 0
   index: -1
 running-legs-4
   rotate: false
-  xy: 951, 56
+  xy: 918, 56
   size: 31, 20
   orig: 31, 20
   offset: 0, 0
   index: -1
 running-legs-5
   rotate: false
-  xy: 819, 54
+  xy: 751, 28
   size: 31, 20
   orig: 31, 20
   offset: 0, 0
   index: -1
 running-legs-6
   rotate: false
-  xy: 972, 78
+  xy: 939, 78
   size: 31, 20
   orig: 31, 20
   offset: 0, 0
   index: -1
 running-legs-7
   rotate: false
-  xy: 918, 56
+  xy: 885, 56
   size: 31, 20
   orig: 31, 20
   offset: 0, 0
   index: -1
 running-legs-8
   rotate: false
-  xy: 751, 28
+  xy: 786, 54
   size: 31, 20
   orig: 31, 20
   offset: 0, 0
   index: -1
 running-legs-9
   rotate: false
-  xy: 873, 78
+  xy: 951, 56
   size: 31, 20
   orig: 31, 20
   offset: 0, 0

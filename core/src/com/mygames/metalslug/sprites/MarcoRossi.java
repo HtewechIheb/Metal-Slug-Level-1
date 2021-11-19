@@ -46,6 +46,7 @@ public class MarcoRossi {
     private TextureAtlas textureAtlas;
     private Sprite torso;
     private Sprite legs;
+
     private Animation<TextureRegion> standingTorso;
     private Animation<TextureRegion> runningTorso;
     private Animation<TextureRegion> shootingTorso;
@@ -90,7 +91,7 @@ public class MarcoRossi {
         world = screen.getWorld();
         torso = new Sprite();
         legs = new Sprite();
-        textureAtlas = screen.getTextureAtlas();
+        textureAtlas = screen.getPlayerTextureAtlas();
         currentState = EnumSet.of(State.STANDING);
         previousState = EnumSet.of(State.STANDING);
         torsoStateTimer = 0;
@@ -245,10 +246,15 @@ public class MarcoRossi {
         body = world.createBody(bodyDef);
 
         fixtureDef.shape = headShape;
-        body.createFixture(fixtureDef);
+        fixtureDef.filter.categoryBits = MetalSlug.PLAYER_BITS;
+        fixtureDef.filter.maskBits = MetalSlug.GROUND_BITS | MetalSlug.OBJECT_BITS;
+
+        body.createFixture(fixtureDef).setUserData(this);
 
         fixtureDef.shape = bodyShape;
-        body.createFixture(fixtureDef);
+        fixtureDef.filter.categoryBits = MetalSlug.PLAYER_BITS;
+        fixtureDef.filter.maskBits = MetalSlug.GROUND_BITS | MetalSlug.OBJECT_BITS;
+        body.createFixture(fixtureDef).setUserData(this);
     }
 
     public void update(float delta){

@@ -25,9 +25,12 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.mygames.metalslug.MetalSlug;
+import com.mygames.metalslug.sprites.Enemy;
+import com.mygames.metalslug.sprites.Hostage;
 import com.mygames.metalslug.sprites.MarcoRossi;
 import com.mygames.metalslug.sprites.Shot;
 import com.mygames.metalslug.tools.MissionOneWorldCreator;
+import com.mygames.metalslug.tools.WorldContactListener;
 
 public class MissionOneScreen implements Screen {
     private MetalSlug game;
@@ -39,7 +42,10 @@ public class MissionOneScreen implements Screen {
     private World world;
     private Box2DDebugRenderer debugRenderer;
     private MissionOneWorldCreator worldCreator;
-    private TextureAtlas textureAtlas;
+    private TextureAtlas playerTextureAtlas;
+    private TextureAtlas soldierTextureAtlas;
+    private TextureAtlas shotsTextureAtlas;
+    private TextureAtlas hoboTextureAtlas;
 
     private MarcoRossi player;
     private final Vector2 GRAVITY = new Vector2(0, -10);
@@ -55,11 +61,16 @@ public class MissionOneScreen implements Screen {
         map = mapLoader.load("missionone.tmx");
         mapRenderer = new OrthogonalTiledMapRenderer(map, MetalSlug.MAP_SCALE);
 
+        playerTextureAtlas = new TextureAtlas("sprites/player.atlas");
+        soldierTextureAtlas = new TextureAtlas("sprites/soldier.atlas");
+        shotsTextureAtlas = new TextureAtlas("sprites/shots.atlas");
+        hoboTextureAtlas = new TextureAtlas("sprites/hobo.atlas");
+
         world = new World(GRAVITY, true);
         debugRenderer = new Box2DDebugRenderer();
         worldCreator = new MissionOneWorldCreator(this);
         worldCreator.createWorld();
-        textureAtlas = new TextureAtlas("sprites/textures.atlas");
+        world.setContactListener(new WorldContactListener());
 
         player = new MarcoRossi(this);
     }
@@ -97,6 +108,12 @@ public class MissionOneScreen implements Screen {
         for(Shot shot : worldCreator.getShots()){
             shot.update(delta);
         }
+        for(Enemy enemy : worldCreator.getEnemies()){
+            enemy.update(delta);
+        }
+        for(Hostage hostage : worldCreator.getHostages()){
+            hostage.update(delta);
+        }
         player.update(delta);
         mapRenderer.setView(camera);
     }
@@ -114,10 +131,16 @@ public class MissionOneScreen implements Screen {
         debugRenderer.render(world, camera.combined);
         game.batch.setProjectionMatrix(camera.combined);
         game.batch.begin();
-        player.draw(game.batch);
         for(Shot shot : worldCreator.getShots()){
             shot.draw(game.batch);
         }
+        for(Enemy enemy : worldCreator.getEnemies()){
+            enemy.draw(game.batch);
+        }
+        for(Hostage hostage : worldCreator.getHostages()){
+            hostage.draw(game.batch);
+        }
+        player.draw(game.batch);
         game.batch.end();
     }
 
@@ -154,8 +177,20 @@ public class MissionOneScreen implements Screen {
         return map;
     }
 
-    public TextureAtlas getTextureAtlas() {
-        return textureAtlas;
+    public TextureAtlas getPlayerTextureAtlas() {
+        return playerTextureAtlas;
+    }
+
+    public TextureAtlas getSoldierTextureAtlas() {
+        return soldierTextureAtlas;
+    }
+
+    public TextureAtlas getShotsTextureAtlas() {
+        return shotsTextureAtlas;
+    }
+
+    public TextureAtlas getHoboTextureAtlas() {
+        return hoboTextureAtlas;
     }
 
     public MissionOneWorldCreator getWorldCreator(){

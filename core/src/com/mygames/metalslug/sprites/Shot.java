@@ -38,7 +38,7 @@ public abstract class Shot {
         this.player = player;
         playerLookingUp = player.getIsLookingUp();
         playerRunningRight = player.getIsRunningRight();
-        textureAtlas = screen.getTextureAtlas();
+        textureAtlas = screen.getShotsTextureAtlas();
         sprite = new Sprite();
 
         defineShot();
@@ -49,6 +49,8 @@ public abstract class Shot {
     public abstract void update(float delta);
 
     public abstract void draw(SpriteBatch batch);
+
+    public abstract void destroy();
 
     public ShotType getType(){
         return type;

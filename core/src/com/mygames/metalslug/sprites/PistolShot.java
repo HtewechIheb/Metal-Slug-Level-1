@@ -15,8 +15,12 @@ public class PistolShot extends Shot {
     private final float SHOT_WIDTH = 12f * MetalSlug.MAP_SCALE;
     private final float SHOT_HEIGHT = 6f * MetalSlug.MAP_SCALE;
 
+    private boolean toBeDestoryed;
+
     public PistolShot(MissionOneScreen screen, MarcoRossi player){
         super(ShotType.PISTOL, screen, player);
+
+        toBeDestoryed = false;
 
         sprite.setRegion(new TextureRegion(textureAtlas.findRegion("pistol-shot")));
         sprite.setBounds(0, 0, SHOT_WIDTH, SHOT_HEIGHT);
@@ -55,21 +59,39 @@ public class PistolShot extends Shot {
         PolygonShape shape = new PolygonShape();
         shape.setAsBox(SHOT_WIDTH / 2, SHOT_HEIGHT / 2);
         fixtureDef.shape = shape;
+        fixtureDef.filter.categoryBits = MetalSlug.SHOT_BITS;
         fixtureDef.isSensor = true;
 
-        body.createFixture(fixtureDef);
+        body.createFixture(fixtureDef).setUserData(this);
     }
 
+    private void remove(){
+        world.destroyBody(body);
+        screen.getWorldCreator().getShots().removeValue(this, true);
+    }
+
+    @Override
     public void update(float delta){
-        if(playerLookingUp){
-            sprite.setPosition(body.getPosition().x + sprite.getHeight() / 2, body.getPosition().y - sprite.getWidth() / 2);
+        if(toBeDestoryed){
+            remove();
         }
         else {
-            sprite.setPosition(body.getPosition().x - sprite.getWidth() / 2, body.getPosition().y - sprite.getHeight() / 2);
+            if(playerLookingUp){
+                sprite.setPosition(body.getPosition().x + sprite.getHeight() / 2, body.getPosition().y - sprite.getWidth() / 2);
+            }
+            else {
+                sprite.setPosition(body.getPosition().x - sprite.getWidth() / 2, body.getPosition().y - sprite.getHeight() / 2);
+            }
         }
     }
 
+    @Override
     public void draw(SpriteBatch batch){
         sprite.draw(batch);
+    }
+
+    @Override
+    public void destroy(){
+        toBeDestoryed = true;
     }
 }

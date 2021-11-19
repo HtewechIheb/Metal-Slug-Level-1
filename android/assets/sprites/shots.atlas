@@ -1,0 +1,13 @@
+
+shots.png
+size: 32, 16
+format: RGBA8888
+filter: Nearest, Nearest
+repeat: none
+pistol-shot
+  rotate: false
+  xy: 2, 2
+  size: 24, 10
+  orig: 24, 10
+  offset: 0, 0
+  index: -1

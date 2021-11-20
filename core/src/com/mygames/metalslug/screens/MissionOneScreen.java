@@ -92,7 +92,7 @@ public class MissionOneScreen implements Screen {
             player.jump(new Vector2(0, 3.5f));
         }
         if(Gdx.input.isKeyJustPressed(Input.Keys.SPACE)){
-            player.shoot();
+            player.attack();
         }
     }
 

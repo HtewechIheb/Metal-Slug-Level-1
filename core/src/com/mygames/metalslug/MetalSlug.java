@@ -16,8 +16,9 @@ public class MetalSlug extends Game {
 	public static final int PLAYER_BITS = 2;
 	public static final int SHOT_BITS = 4;
 	public static final int ENEMY_BITS = 8;
-	public static final int OBJECT_BITS = 16;
-	public static final int HOSTAGE_BITS = 32;
+	public static final int ENEMY_SENSOR_BITS = 16;
+	public static final int OBJECT_BITS = 32;
+	public static final int HOSTAGE_BITS = 64;
 
 	public SpriteBatch batch;
 

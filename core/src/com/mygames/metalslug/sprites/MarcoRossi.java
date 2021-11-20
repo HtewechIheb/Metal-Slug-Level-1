@@ -28,7 +28,7 @@ public class MarcoRossi {
     public enum State {
         STANDING,
         RUNNING,
-        SHOOTING,
+        ATTACKING,
         JUMPING,
         LOOKINGUP,
         TRANSITIONING
@@ -38,6 +38,11 @@ public class MarcoRossi {
         PISTOL,
         MACHINEGUN,
         FIREGUN
+    }
+
+    public enum AttackMode {
+        MELEE,
+        WEAPON
     }
 
     private Body body;
@@ -53,6 +58,7 @@ public class MarcoRossi {
     private Animation<TextureRegion> standingTorso;
     private Animation<TextureRegion> runningTorso;
     private Animation<TextureRegion> shootingTorso;
+    private Animation<TextureRegion> knifingTorso;
     private Animation<TextureRegion> standingJumpingTorso;
     private Animation<TextureRegion> runningJumpingTorso;
     private Animation<TextureRegion> lookingUpTransitionTorso;
@@ -68,11 +74,13 @@ public class MarcoRossi {
     private EnumSet<State> previousState;
     private float torsoStateTimer;
     private float legsStateTimer;
+    private AttackMode attackMode;
+    private AttackMode attackModeBuffer;
 
     private boolean isStanding = false;
     private boolean isRunning = false;
     private boolean isRunningRight = true;
-    private boolean isShooting = false;
+    private boolean isAttacking = false;
     private boolean isJumping = false;
     private boolean isRunningJumping = false;
     private boolean isStandingJumping = false;
@@ -80,7 +88,7 @@ public class MarcoRossi {
     private boolean isTransitioning = false;
 
     private boolean runningDisabled = false;
-    private boolean shootingDisabled = false;
+    private boolean attackingDisabled = false;
     private boolean lookingUpDisabled = false;
     private boolean jumpingDisabled = false;
 
@@ -100,6 +108,8 @@ public class MarcoRossi {
         bodyWidth = 0;
         bodyHeight = 0;
         weapon = Weapon.PISTOL;
+        attackMode = AttackMode.WEAPON;
+        attackModeBuffer = AttackMode.WEAPON;
 
         defineAnimations();
         defineCharacter();
@@ -131,6 +141,12 @@ public class MarcoRossi {
             frames.add(new TextureRegion(textureAtlas.findRegion(String.format("shooting-torso-%d", i))));
         }
         shootingTorso = new Animation<TextureRegion>(0.04f, frames);
+        frames.clear();
+
+        for(i = 1; i < 7; i++){
+            frames.add(new TextureRegion(textureAtlas.findRegion(String.format("knifing-torso-%d", i))));
+        }
+        knifingTorso = new Animation<TextureRegion>(0.06f, frames);
         frames.clear();
 
         for(i = 1; i < 7; i++){
@@ -199,12 +215,12 @@ public class MarcoRossi {
 
         fixtureDef.shape = headShape;
         fixtureDef.filter.categoryBits = MetalSlug.PLAYER_BITS;
-        fixtureDef.filter.maskBits = MetalSlug.GROUND_BITS | MetalSlug.OBJECT_BITS;
+        fixtureDef.filter.maskBits = MetalSlug.GROUND_BITS | MetalSlug.OBJECT_BITS | MetalSlug.ENEMY_SENSOR_BITS;
         body.createFixture(fixtureDef).setUserData(this);
 
         fixtureDef.shape = bodyShape;
         fixtureDef.filter.categoryBits = MetalSlug.PLAYER_BITS;
-        fixtureDef.filter.maskBits = MetalSlug.GROUND_BITS | MetalSlug.OBJECT_BITS;
+        fixtureDef.filter.maskBits = MetalSlug.GROUND_BITS | MetalSlug.OBJECT_BITS | MetalSlug.ENEMY_SENSOR_BITS;;
         body.createFixture(fixtureDef).setUserData(this);
     }
 
@@ -216,14 +232,27 @@ public class MarcoRossi {
         else if(body.getLinearVelocity().x < 0){
             isRunningRight = false;
         }
+        if(isJumping && body.getLinearVelocity().y == 0){
+            isStandingJumping = false;
+            isRunningJumping = false;
+        }
         isJumping = body.getLinearVelocity().y != 0;
         isStanding = !isRunning && !isJumping;
         isTransitioning = lookingUpAnimation || reverseLookingUpAnimation;
+        if(isRunning && !Gdx.input.isKeyPressed(Input.Keys.RIGHT) && !Gdx.input.isKeyPressed(Input.Keys.LEFT)){
+            body.setLinearVelocity(new Vector2(0, 0));
+            isAttacking = false;
+            isRunning = false;
+        }
 
-        runningDisabled = isLookingUp;
-        shootingDisabled = isJumping;
-        lookingUpDisabled = isRunning || isJumping;
+        runningDisabled = isLookingUp || isStandingJumping;
+        attackingDisabled = isJumping;
+        lookingUpDisabled = isRunning || isJumping || isAttacking;
         jumpingDisabled = isLookingUp;
+
+        if(attackingDisabled){
+            isAttacking = false;
+        }
 
         currentState = getState();
         torsoStateTimer = previousState.equals(currentState) ? torsoStateTimer + delta : 0;
@@ -265,15 +294,29 @@ public class MarcoRossi {
                 }
             }
         }
-        else if(currentState.contains(State.LOOKINGUP) && currentState.contains(State.SHOOTING)){
-            region = shootingLookingUpTorso.getKeyFrame(torsoStateTimer, false);
-            if(shootingLookingUpTorso.isAnimationFinished(torsoStateTimer)){
-                isShooting = false;
+        else if(currentState.contains(State.LOOKINGUP) && currentState.contains(State.ATTACKING)){
+            Animation<TextureRegion> animation;
+
+            if(attackMode == AttackMode.WEAPON){
+                animation = shootingLookingUpTorso;
+                region = shootingLookingUpTorso.getKeyFrame(torsoStateTimer, false);
+            }
+            else{
+                animation = knifingTorso;
+                region = knifingTorso.getKeyFrame(torsoStateTimer, false);
+            }
+            if(animation.isAnimationFinished(torsoStateTimer)){
+                isAttacking = false;
+            }
+            if(!Gdx.input.isKeyPressed(Input.Keys.UP)){
+                isAttacking = false;
+                reverseLookingUpAnimation = true;
             }
         }
         else if(currentState.contains(State.LOOKINGUP)){
             region = idleLookingUpTorso.getKeyFrame(torsoStateTimer, true);
             if(!Gdx.input.isKeyPressed(Input.Keys.UP)){
+                isAttacking = false;
                 reverseLookingUpAnimation = true;
             }
         }
@@ -288,10 +331,19 @@ public class MarcoRossi {
                 region = standingJumpingTorso.getKeyFrame(torsoStateTimer, false);
             }
         }
-        else if(currentState.contains(State.SHOOTING)){
-            region = shootingTorso.getKeyFrame(torsoStateTimer, false);
-            if(shootingTorso.isAnimationFinished(torsoStateTimer)){
-                isShooting = false;
+        else if(currentState.contains(State.ATTACKING)){
+            Animation<TextureRegion> animation;
+
+            if(attackMode == AttackMode.WEAPON){
+                animation = shootingTorso;
+                region = shootingTorso.getKeyFrame(torsoStateTimer, false);
+            }
+            else{
+                animation = knifingTorso;
+                region = knifingTorso.getKeyFrame(torsoStateTimer, false);
+            }
+            if(animation.isAnimationFinished(torsoStateTimer)){
+                isAttacking = false;
             }
         }
         else if(currentState.contains(State.RUNNING)){
@@ -368,7 +420,7 @@ public class MarcoRossi {
             offsetX = torso.isFlipX() ? 9 * MetalSlug.MAP_SCALE : (-9) * MetalSlug.MAP_SCALE;
             offsetY = (-3) * MetalSlug.MAP_SCALE;
         }
-        else if(currentState.contains(State.SHOOTING)){
+        else if(currentState.contains(State.ATTACKING)){
             offsetX = torso.isFlipX() ? 1 * MetalSlug.MAP_SCALE : (-1) * MetalSlug.MAP_SCALE;
             offsetY = (-6) * MetalSlug.MAP_SCALE;
         }
@@ -422,8 +474,8 @@ public class MarcoRossi {
         if(isJumping){
             state.add(State.JUMPING);
         }
-        if(isShooting){
-            state.add(State.SHOOTING);
+        if(isAttacking){
+            state.add(State.ATTACKING);
         }
         if(isRunning){
             state.add(State.RUNNING);
@@ -440,38 +492,35 @@ public class MarcoRossi {
         reverseLookingUpAnimation = false;
     }
 
-    public void shoot(){
-        if(!shootingDisabled){
-            if(isShooting){
+    public void attack(){
+        if(!attackingDisabled){
+            if(isAttacking && attackMode != AttackMode.MELEE){
+                attackMode = attackModeBuffer;
                 torsoStateTimer = 0;
             }
-            else {
-                isShooting = true;
+            else if(!isAttacking) {
+                attackMode = attackModeBuffer;
+                isAttacking = true;
             }
 
-            switch (weapon){
-                case PISTOL:
-                default:
-                    screen.getWorldCreator().createShot(Shot.ShotType.PISTOL, screen, this);
+            if(attackMode == AttackMode.WEAPON){
+                switch (weapon){
+                    case PISTOL:
+                    default:
+                        screen.getWorldCreator().createShot(Shot.ShotType.PISTOL, screen, this);
+                }
             }
         }
     }
 
     public void move(Vector2 vector){
-        isShooting = false;
-
         if(!runningDisabled){
             body.applyLinearImpulse(vector, body.getWorldCenter(), true);
         }
     }
 
     public void jump(Vector2 vector){
-        isShooting = false;
-
         if(!jumpingDisabled && !isJumping){
-            isRunningJumping = false;
-            isStandingJumping = false;
-
             if(isRunning){
                 isRunningJumping = true;
             }
@@ -531,5 +580,9 @@ public class MarcoRossi {
 
     public boolean getIsLookingUp(){
         return isLookingUp;
+    }
+
+    public void setAttackMode(AttackMode attackMode){
+        this.attackModeBuffer = attackMode;
     }
 }

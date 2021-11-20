@@ -10,6 +10,8 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.CircleShape;
+import com.badlogic.gdx.physics.box2d.Filter;
+import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.utils.Array;
@@ -18,6 +20,7 @@ import com.mygames.metalslug.screens.MissionOneScreen;
 
 import java.util.EnumSet;
 import java.util.Random;
+import java.util.function.Consumer;
 
 public class Soldier extends Enemy{
     private final float BODY_RECTANGLE_WIDTH = 18f * MetalSlug.MAP_SCALE;
@@ -30,6 +33,11 @@ public class Soldier extends Enemy{
         RUNNING,
         SCARED,
         DYING
+    }
+
+    public enum AttackMode {
+        MELEE,
+        WEAPON
     }
 
     private TextureAtlas textureAtlas;
@@ -49,17 +57,18 @@ public class Soldier extends Enemy{
     private EnumSet<State> previousState;
     private float stateTimer;
     private float deathTimer;
+    private AttackMode attackMode;
 
     private boolean isChatting = false;
     private boolean isSneaking = false;
     private boolean isRunning = false;
     private boolean isRunningRight = false;
     private boolean isScared = false;
-    private boolean toBeDestroyed = false;
     private boolean isDying = false;
-    private boolean dead = false;
 
     private Random randomizer;
+
+
 
     public Soldier(MissionOneScreen screen, Vector2 position, State state, boolean isRunningRight){
         super(screen, position);
@@ -77,6 +86,7 @@ public class Soldier extends Enemy{
         isScared = state == State.SCARED;
         isRunning = state == State.RUNNING;
         this.isRunningRight = isRunningRight;
+        attackMode = AttackMode.WEAPON;
         randomizer = new Random();
 
         defineEnemy();
@@ -174,31 +184,31 @@ public class Soldier extends Enemy{
         fixtureDef.filter.categoryBits = MetalSlug.ENEMY_BITS;
         fixtureDef.filter.maskBits = MetalSlug.GROUND_BITS | MetalSlug.OBJECT_BITS | MetalSlug.SHOT_BITS;
         body.createFixture(fixtureDef).setUserData(this);
+
+        fixtureDef.filter.categoryBits = MetalSlug.ENEMY_SENSOR_BITS;
+        fixtureDef.filter.maskBits = MetalSlug.GROUND_BITS | MetalSlug.OBJECT_BITS | MetalSlug.PLAYER_BITS;
+        fixtureDef.isSensor = true;
+        body.createFixture(fixtureDef).setUserData(this);
     }
 
     @Override
     public void update(float delta){
-        if(dead){
+        currentState = getState();
+        stateTimer = previousState.equals(currentState) ? stateTimer + delta : 0;
+
+        if(isDying){
             deathTimer += delta;
-            if(deathTimer >= 1f){
+            if(deathTimer >= 2f){
                 remove();
             }
         }
-        else{
-            currentState = getState();
-            stateTimer = previousState.equals(currentState) ? stateTimer + delta : 0;
 
-            if(!toBeDestroyed){
+        TextureRegion region = getFrame();
+        sprite.setRegion(region);
+        sprite.setBounds(0, 0, region.getRegionWidth() * MetalSlug.MAP_SCALE, region.getRegionHeight() * MetalSlug.MAP_SCALE);
+        setSpritePosition();
 
-            }
-
-            TextureRegion region = getFrame();
-            sprite.setRegion(region);
-            sprite.setBounds(0, 0, region.getRegionWidth() * MetalSlug.MAP_SCALE, region.getRegionHeight() * MetalSlug.MAP_SCALE);
-            setSpritePosition();
-
-            previousState = currentState.clone();
-        }
+        previousState = currentState.clone();
     }
 
     @Override
@@ -233,9 +243,6 @@ public class Soldier extends Enemy{
         }
         else if(currentState.contains(State.DYING)){
             region = dying.getKeyFrame(stateTimer, false);
-            if(dying.isAnimationFinished(stateTimer)){
-                dead = true;
-            }
         }
         else if(currentState.contains(State.RUNNING)){
             region = running.getKeyFrame(stateTimer, true);
@@ -312,11 +319,18 @@ public class Soldier extends Enemy{
     }
 
     public void kill(){
+        Filter filter = new Filter();
+        filter.maskBits = MetalSlug.GROUND_BITS | MetalSlug.OBJECT_BITS;
+        body.getFixtureList().forEach(fixture -> fixture.setFilterData(filter));
         isDying = true;
     }
 
     private void remove(){
         world.destroyBody(body);
         screen.getWorldCreator().getEnemies().removeValue(this, true);
+    }
+
+    public void setAttackMode(AttackMode attackMode){
+        this.attackMode = attackMode;
     }
 }

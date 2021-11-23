@@ -20,14 +20,19 @@ public class PistolShot extends Shot {
     public PistolShot(MissionOneScreen screen, MarcoRossi player){
         super(ShotType.PISTOL, screen, player);
 
-        sprite.setRegion(new TextureRegion(textureAtlas.findRegion("pistol-shot")));
-        sprite.setBounds(0, 0, SHOT_WIDTH, SHOT_HEIGHT);
-
         defineShot();
 
+        sprite.setRegion(new TextureRegion(textureAtlas.findRegion("pistol-shot")));
         if(playerLookingUp){
+            sprite.setBounds(body.getPosition().x + sprite.getHeight() / 2, body.getPosition().y - sprite.getWidth() / 2, SHOT_WIDTH, SHOT_HEIGHT);
             sprite.rotate(90f);
-            body.setLinearVelocity(new Vector2(0f, 0f));
+        }
+        else {
+            sprite.setBounds(body.getPosition().x - sprite.getWidth() / 2, body.getPosition().y - sprite.getHeight() / 2, SHOT_WIDTH, SHOT_HEIGHT);
+        }
+
+        if(playerLookingUp){
+            body.setLinearVelocity(new Vector2(0f, 3f));
         }
         else if(playerRunningRight){
             body.setLinearVelocity(new Vector2(3f, 0));
@@ -35,7 +40,7 @@ public class PistolShot extends Shot {
         else{
             body.setLinearVelocity(new Vector2(-3f, 0));
         }
-    }
+     }
 
     protected void defineShot(){
         BodyDef bodyDef = new BodyDef();

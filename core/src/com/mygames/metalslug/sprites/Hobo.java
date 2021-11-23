@@ -18,6 +18,7 @@ import com.mygames.metalslug.screens.MissionOneScreen;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.Stack;
 
 public class Hobo extends Hostage {
     private final float HEAD_CIRCLE_RADIUS = 9f * MetalSlug.MAP_SCALE;
@@ -39,16 +40,12 @@ public class Hobo extends Hostage {
     private Animation<TextureRegion> hanging;
     private Animation<TextureRegion> sitting;
 
-    private EnumSet<State> currentState;
-    private EnumSet<State> previousState;
+    private State currentState;
+    private State previousState;
+    private Stack<State> stateStack;
     private float stateTimer;
 
-    private boolean isRunning = false;
     private boolean isRunningRight = false;
-    private boolean isHanging = false;
-    private boolean isSitting = false;
-
-    private boolean toBeDestroyed = false;
 
     private float bodyWidth;
     private float bodyHeight;
@@ -61,10 +58,10 @@ public class Hobo extends Hostage {
         stateTimer = 0;
         bodyWidth = 0;
         bodyHeight = 0;
-        currentState = EnumSet.of(state);
-        previousState = EnumSet.of(state);
-        isHanging = state == State.HANGING;
-        isSitting = state == State.SITTING;
+        currentState = state;
+        previousState = state;
+        stateStack = new Stack<>();
+        stateStack.push(currentState);
 
         defineAnimations();
         defineHostage();
@@ -122,11 +119,11 @@ public class Hobo extends Hostage {
         CircleShape headShape = new CircleShape();
         PolygonShape bodyShape = new PolygonShape();
 
-        if(isHanging){
+        if(stateStack.peek() == State.HANGING){
             bodyWidth = HANGING_RECTANGLE_WIDTH;
             bodyHeight = HANGING_RECTANGLE_HEIGHT;
         }
-        else if(isSitting){
+        else if(stateStack.peek() == State.SITTING){
             bodyWidth = SITTING_RECTANGLE_WIDTH;
             bodyHeight = SITTING_RECTANGLE_HEIGHT;
         }
@@ -155,26 +152,34 @@ public class Hobo extends Hostage {
         fixtures = body.getFixtureList();
     }
 
+    private void handleState(float delta){
+        switch (previousState){
+            case HANGING:
+            case SITTING:
+                break;
+        }
+    }
+
     @Override
     public void update(float delta) {
-        currentState = getState();
-        stateTimer = previousState.equals(currentState) ? stateTimer + delta : 0;
+        stateTimer += delta;
+        previousState = stateStack.peek();
+        handleState(delta);
+        currentState = stateStack.peek();
 
         TextureRegion region = getFrame();
         sprite.setRegion(region);
         sprite.setBounds(0, 0, region.getRegionWidth() * MetalSlug.MAP_SCALE, region.getRegionHeight() * MetalSlug.MAP_SCALE);
         setSpritePosition();
-
-        previousState = currentState.clone();
     }
 
     private TextureRegion getFrame(){
         TextureRegion region;
 
-        if(currentState.contains(State.HANGING)){
+        if(currentState == State.HANGING){
             region = hanging.getKeyFrame(stateTimer, true);
         }
-        else if(currentState.contains(State.SITTING)){
+        else if(currentState== State.SITTING){
             region = sitting.getKeyFrame(stateTimer, true);
         }
         else {
@@ -195,11 +200,11 @@ public class Hobo extends Hostage {
         float offsetX;
         float offsetY;
 
-        if(currentState.contains(State.HANGING)){
+        if(currentState == State.HANGING){
             offsetX = sprite.isFlipX() ? 0 * MetalSlug.MAP_SCALE : 0 * MetalSlug.MAP_SCALE;
             offsetY = 0 * MetalSlug.MAP_SCALE;
         }
-        else if(currentState.contains(State.SITTING)){
+        else if(currentState == State.SITTING){
             offsetX = sprite.isFlipX() ? 10 * MetalSlug.MAP_SCALE : (-10) * MetalSlug.MAP_SCALE;
             offsetY = 0 * MetalSlug.MAP_SCALE;
         }
@@ -214,19 +219,6 @@ public class Hobo extends Hostage {
         else{
             sprite.setPosition(body.getPosition().x - (bodyWidth / 2)  + offsetX, body.getPosition().y - (bodyHeight / 2) + offsetY);
         }
-    }
-
-    private EnumSet<State> getState(){
-        EnumSet<State> state = EnumSet.noneOf(State.class);
-
-        if(isHanging){
-            state.add(State.HANGING);
-        }
-        else if(isSitting){
-            state.add(State.SITTING);
-        }
-
-        return state;
     }
 
     @Override

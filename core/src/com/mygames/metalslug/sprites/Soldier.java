@@ -20,6 +20,7 @@ import com.mygames.metalslug.screens.MissionOneScreen;
 
 import java.util.EnumSet;
 import java.util.Random;
+import java.util.Stack;
 import java.util.function.Consumer;
 
 public class Soldier extends Enemy{
@@ -53,21 +54,17 @@ public class Soldier extends Enemy{
 
     private int chattingIndex;
 
-    private EnumSet<State> currentState;
-    private EnumSet<State> previousState;
+    private State currentState;
+    private State previousState;
+    private Stack<State> stateStack;
     private float stateTimer;
     private float deathTimer;
     private AttackMode attackMode;
 
-    private boolean isChatting = false;
-    private boolean isSneaking = false;
-    private boolean isRunning = false;
     private boolean isRunningRight = false;
-    private boolean isScared = false;
     private boolean isDying = false;
 
     private Random randomizer;
-
 
 
     public Soldier(MissionOneScreen screen, Vector2 position, State state, boolean isRunningRight){
@@ -79,12 +76,10 @@ public class Soldier extends Enemy{
         deathTimer = 0;
         bodyWidth = 0;
         bodyHeight = 0;
-        currentState = EnumSet.of(state);
-        previousState = EnumSet.of(state);
-        isChatting = state == State.CHATTING;
-        isSneaking = state == State.SNEAKING;
-        isScared = state == State.SCARED;
-        isRunning = state == State.RUNNING;
+        currentState = state;
+        previousState = state;
+        stateStack = new Stack<>();
+        stateStack.push(currentState);
         this.isRunningRight = isRunningRight;
         attackMode = AttackMode.WEAPON;
         randomizer = new Random();
@@ -191,24 +186,44 @@ public class Soldier extends Enemy{
         body.createFixture(fixtureDef).setUserData(this);
     }
 
+    private State handleState(float delta){
+        switch(previousState){
+            case CHATTING:
+            case SNEAKING:
+            case SCARED:
+            case RUNNING:
+                if(isDying){
+                    setState(State.DYING);
+                    resetFrameTimer();
+                }
+                break;
+            case DYING:
+                deathTimer += delta;
+                if(deathTimer >= 2f){
+                    remove();
+                }
+                break;
+        }
+        return currentState;
+    }
+
+    private void setState(State state){
+        stateStack.pop();
+        stateStack.push(state);
+    }
+
     @Override
     public void update(float delta){
-        currentState = getState();
-        stateTimer = previousState.equals(currentState) ? stateTimer + delta : 0;
+        stateTimer += delta;
 
-        if(isDying){
-            deathTimer += delta;
-            if(deathTimer >= 2f){
-                remove();
-            }
-        }
+        previousState = stateStack.peek();
+        handleState(delta);
+        currentState = stateStack.peek();
 
         TextureRegion region = getFrame();
         sprite.setRegion(region);
         sprite.setBounds(0, 0, region.getRegionWidth() * MetalSlug.MAP_SCALE, region.getRegionHeight() * MetalSlug.MAP_SCALE);
         setSpritePosition();
-
-        previousState = currentState.clone();
     }
 
     @Override
@@ -216,10 +231,10 @@ public class Soldier extends Enemy{
         sprite.draw(batch);
     }
 
-    private TextureRegion getFrame(){
+    private TextureRegion getFrame() {
         TextureRegion region;
 
-        if(currentState.contains(State.CHATTING)){
+        if(currentState == State.CHATTING){
             region = chatting.get(chattingIndex).getKeyFrame(stateTimer, false);
             if(chatting.get(chattingIndex).isAnimationFinished(stateTimer)){
                 stateTimer = 0;
@@ -235,16 +250,16 @@ public class Soldier extends Enemy{
                 }
             }
         }
-        else if(currentState.contains(State.SNEAKING)){
+        else if(currentState == State.SNEAKING){
             region = sneaking.getKeyFrame(stateTimer, true);
         }
-        else if(currentState.contains(State.SCARED)){
+        else if(currentState == State.SCARED){
             region = scared.getKeyFrame(stateTimer, true);
         }
-        else if(currentState.contains(State.DYING)){
+        else if(currentState == State.DYING){
             region = dying.getKeyFrame(stateTimer, false);
         }
-        else if(currentState.contains(State.RUNNING)){
+        else if(currentState == State.RUNNING){
             region = running.getKeyFrame(stateTimer, true);
         }
         else {
@@ -261,61 +276,41 @@ public class Soldier extends Enemy{
         return region;
     }
 
-    private void setSpritePosition(){
+    private void setSpritePosition() {
         float offsetX;
         float offsetY;
 
-        if(currentState.contains(State.CHATTING)){
+        if (currentState == State.CHATTING) {
             offsetX = sprite.isFlipX() ? 10 * MetalSlug.MAP_SCALE : (-10) * MetalSlug.MAP_SCALE;
             offsetY = 0 * MetalSlug.MAP_SCALE;
-        }
-        else if(currentState.contains(State.SNEAKING)){
+        } else if (currentState == State.SNEAKING) {
             offsetX = sprite.isFlipX() ? 12 * MetalSlug.MAP_SCALE : (-12) * MetalSlug.MAP_SCALE;
             offsetY = 0 * MetalSlug.MAP_SCALE;
-        }
-        else if(currentState.contains(State.SCARED)){
+        } else if (currentState == State.SCARED) {
             offsetX = sprite.isFlipX() ? 12 * MetalSlug.MAP_SCALE : (-12) * MetalSlug.MAP_SCALE;
             offsetY = 0 * MetalSlug.MAP_SCALE;
-        }
-        else if(currentState.contains(State.RUNNING)){
+        } else if (currentState == State.RUNNING) {
             offsetX = sprite.isFlipX() ? 2 * MetalSlug.MAP_SCALE : (-2) * MetalSlug.MAP_SCALE;
             offsetY = 0 * MetalSlug.MAP_SCALE;
-        }
-        else{
+        } else {
             offsetX = sprite.isFlipX() ? 0 * MetalSlug.MAP_SCALE : 0 * MetalSlug.MAP_SCALE;
             offsetY = 0 * MetalSlug.MAP_SCALE;
         }
 
-        if(sprite.isFlipX()){
+        if (sprite.isFlipX()) {
             sprite.setPosition(body.getPosition().x + (bodyWidth / 2) - sprite.getRegionWidth() * MetalSlug.MAP_SCALE + offsetX, body.getPosition().y - (bodyHeight / 2) + offsetY);
-        }
-        else{
-            sprite.setPosition(body.getPosition().x - (bodyWidth / 2)  + offsetX, body.getPosition().y - (bodyHeight / 2) + offsetY);
+        } else {
+            sprite.setPosition(body.getPosition().x - (bodyWidth / 2) + offsetX, body.getPosition().y - (bodyHeight / 2) + offsetY);
         }
     }
 
-    private EnumSet<State> getState(){
-        EnumSet<State> state = EnumSet.noneOf(State.class);
+    private void resetFrameTimer(){
+        stateTimer = 0;
+    }
 
-        if(isDying){
-            state.add(State.DYING);
-        }
-        else{
-            if(isChatting){
-                state.add(State.CHATTING);
-            }
-            if(isSneaking){
-                state.add(State.SNEAKING);
-            }
-            if(isScared){
-                state.add(State.SCARED);
-            }
-            if(isRunning){
-                state.add(State.RUNNING);
-            }
-        }
-
-        return state;
+    private void remove(){
+        world.destroyBody(body);
+        screen.getWorldCreator().getEnemies().removeValue(this, true);
     }
 
     public void kill(){
@@ -323,11 +318,6 @@ public class Soldier extends Enemy{
         filter.maskBits = MetalSlug.GROUND_BITS | MetalSlug.OBJECT_BITS;
         body.getFixtureList().forEach(fixture -> fixture.setFilterData(filter));
         isDying = true;
-    }
-
-    private void remove(){
-        world.destroyBody(body);
-        screen.getWorldCreator().getEnemies().removeValue(this, true);
     }
 
     public void setAttackMode(AttackMode attackMode){

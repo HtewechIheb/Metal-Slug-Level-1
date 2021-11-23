@@ -76,24 +76,6 @@ public class MissionOneScreen implements Screen {
     }
 
     public void handleInput(float delta){
-        if((player.getBody().getPosition().x - 13 * MetalSlug.MAP_SCALE) <= (camera.position.x - viewport.getWorldWidth() / 2)){
-            player.stop(true, false);
-        }
-        if(Gdx.input.isKeyPressed(Input.Keys.RIGHT) && player.getBody().getLinearVelocity().x <= 1.5f){
-            player.move(new Vector2(0.3f, 0));
-        }
-        else if(Gdx.input.isKeyPressed(Input.Keys.LEFT) && player.getBody().getLinearVelocity().x >= -1.5f && (player.getBody().getPosition().x - 13 * MetalSlug.MAP_SCALE) > (camera.position.x - viewport.getWorldWidth() / 2)){
-            player.move(new Vector2(-0.3f, 0));
-        }
-        if(Gdx.input.isKeyPressed(Input.Keys.UP)){
-            player.lookup();
-        }
-        if(Gdx.input.isKeyJustPressed(Input.Keys.C)){
-            player.jump(new Vector2(0, 3.5f));
-        }
-        if(Gdx.input.isKeyJustPressed(Input.Keys.SPACE)){
-            player.attack();
-        }
     }
 
     public void update(float delta){
@@ -167,6 +149,14 @@ public class MissionOneScreen implements Screen {
     @Override
     public void dispose() {
 
+    }
+
+    public Viewport getViewport() {
+        return viewport;
+    }
+
+    public OrthographicCamera getCamera() {
+        return camera;
     }
 
     public World getWorld(){

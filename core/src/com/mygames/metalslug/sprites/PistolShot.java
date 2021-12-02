@@ -80,7 +80,10 @@ public class PistolShot extends Shot {
 
     @Override
     public void update(float delta){
-        if(toBeDestoryed){
+        if(toBeDestoryed ||
+                body.getPosition().x > screen.getCamera().position.x + (screen.getCamera().viewportWidth / 2) ||
+                body.getPosition().x + SHOT_WIDTH < screen.getCamera().position.x - (screen.getCamera().viewportWidth / 2) ||
+                body.getPosition().y > screen.getCamera().position.y + (screen.getCamera().viewportHeight / 2)){
             remove();
         }
         else {

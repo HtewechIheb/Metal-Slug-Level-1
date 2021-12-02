@@ -33,6 +33,10 @@ public class Soldier extends Enemy{
         SNEAKING,
         RUNNING,
         SCARED,
+        KNIFING,
+        FLEEING,
+        IDLING,
+        SEARCHING,
         DYING
     }
 
@@ -50,6 +54,10 @@ public class Soldier extends Enemy{
     private Animation<TextureRegion> sneaking;
     private Animation<TextureRegion> running;
     private Animation<TextureRegion> scared;
+    private Animation<TextureRegion> knifing;
+    private Animation<TextureRegion> fleeing;
+    private Animation<TextureRegion> idling;
+    private Animation<TextureRegion> searching;
     private Animation<TextureRegion> dying;
 
     private int chattingIndex;
@@ -63,6 +71,7 @@ public class Soldier extends Enemy{
 
     private boolean isRunningRight = false;
     private boolean isDying = false;
+    private boolean collidingWithPlayer = false;
 
     private Random randomizer;
 
@@ -145,10 +154,47 @@ public class Soldier extends Enemy{
         sneaking = new Animation<TextureRegion>(0.2f, frames);
         frames.clear();
 
-        for(i = 1; i < 12; i++){
+        for(i = 1; i < 14; i++){
             frames.add(new TextureRegion(textureAtlas.findRegion(String.format("scared-%d", i))));
         }
         scared = new Animation<TextureRegion>(0.1f, frames);
+        frames.clear();
+
+        for(i = 1; i < 13; i++){
+            framesBuffer.add(new TextureRegion(textureAtlas.findRegion(String.format("knifing-%d", i))));
+        }
+        frames.addAll(framesBuffer);
+        framesBuffer.removeIndex(0);
+        framesBuffer.reverse();
+        frames.addAll(framesBuffer);
+        knifing = new Animation<TextureRegion>(0.1f, frames);
+        framesBuffer.clear();
+        frames.clear();
+
+        for(i = 1; i < 13; i++){
+            frames.add(new TextureRegion(textureAtlas.findRegion(String.format("fleeing-%d", i))));
+        }
+        fleeing = new Animation<TextureRegion>(0.08f, frames);
+        frames.clear();
+
+        for(i = 1; i < 5; i++){
+            framesBuffer.add(new TextureRegion(textureAtlas.findRegion(String.format("idle-%d", i))));
+        }
+        frames.addAll(framesBuffer);
+        framesBuffer.reverse();
+        frames.addAll(framesBuffer);
+        idling = new Animation<TextureRegion>(0.15f, frames);
+        framesBuffer.clear();
+        frames.clear();
+
+        for(i = 1; i < 6; i++){
+            framesBuffer.add(new TextureRegion(textureAtlas.findRegion(String.format("searching-%d", i))));
+        }
+        frames.addAll(framesBuffer);
+        framesBuffer.reverse();
+        frames.addAll(framesBuffer);
+        searching = new Animation<TextureRegion>(0.15f, frames);
+        framesBuffer.clear();
         frames.clear();
     }
 
@@ -165,6 +211,7 @@ public class Soldier extends Enemy{
         bodyDef.type = BodyDef.BodyType.DynamicBody;
         bodyDef.position.set(position.x + (bodyWidth / 2), position.y + (bodyHeight / 2));
         body = world.createBody(bodyDef);
+        body.setActive(false);
 
         headShape.setRadius(BODY_CIRCLE_RADIUS);
         headShape.setPosition(new Vector2(0, bodyHeight / 2));
@@ -186,27 +233,6 @@ public class Soldier extends Enemy{
         body.createFixture(fixtureDef).setUserData(this);
     }
 
-    private State handleState(float delta){
-        switch(previousState){
-            case CHATTING:
-            case SNEAKING:
-            case SCARED:
-            case RUNNING:
-                if(isDying){
-                    setState(State.DYING);
-                    resetFrameTimer();
-                }
-                break;
-            case DYING:
-                deathTimer += delta;
-                if(deathTimer >= 2f){
-                    remove();
-                }
-                break;
-        }
-        return currentState;
-    }
-
     private void setState(State state){
         stateStack.pop();
         stateStack.push(state);
@@ -215,55 +241,64 @@ public class Soldier extends Enemy{
     @Override
     public void update(float delta){
         stateTimer += delta;
-
-        previousState = stateStack.peek();
-        handleState(delta);
         currentState = stateStack.peek();
 
-        TextureRegion region = getFrame();
-        sprite.setRegion(region);
-        sprite.setBounds(0, 0, region.getRegionWidth() * MetalSlug.MAP_SCALE, region.getRegionHeight() * MetalSlug.MAP_SCALE);
-        setSpritePosition();
-    }
+        if(body.getPosition().x - player.getBody().getPosition().x < 192 * MetalSlug.MAP_SCALE){
+            body.setActive(true);
+        }
 
-    @Override
-    public void draw(SpriteBatch batch){
-        sprite.draw(batch);
-    }
-
-    private TextureRegion getFrame() {
         TextureRegion region;
+        float offsetX = 0;
+        float offsetY = 0;
 
-        if(currentState == State.CHATTING){
-            region = chatting.get(chattingIndex).getKeyFrame(stateTimer, false);
-            if(chatting.get(chattingIndex).isAnimationFinished(stateTimer)){
-                stateTimer = 0;
-                int randomValue = randomizer.nextInt(10);
-                if(randomValue == 9){
-                    chattingIndex = 2;
-                }
-                else if(randomValue == 8){
-                    chattingIndex = 0;
+        switch(currentState){
+            case CHATTING:
+                region = chatting.get(chattingIndex).getKeyFrame(stateTimer, false);
+
+                offsetX = sprite.isFlipX() ? 10 * MetalSlug.MAP_SCALE : (-10) * MetalSlug.MAP_SCALE;
+                break;
+            case SNEAKING:
+                region = sneaking.getKeyFrame(stateTimer, true);
+
+                offsetX = sprite.isFlipX() ? 12 * MetalSlug.MAP_SCALE : (-12) * MetalSlug.MAP_SCALE;
+                break;
+            case SCARED:
+                region = scared.getKeyFrame(stateTimer, true);
+
+                offsetX = sprite.isFlipX() ? 12 * MetalSlug.MAP_SCALE : (-12) * MetalSlug.MAP_SCALE;
+                break;
+            case KNIFING:
+                region = knifing.getKeyFrame(stateTimer, false);
+                break;
+            case FLEEING:
+                region = fleeing.getKeyFrame(stateTimer, true);
+
+                offsetX = sprite.isFlipX() ? 2 * MetalSlug.MAP_SCALE : (-2) * MetalSlug.MAP_SCALE;
+                break;
+            case RUNNING:
+                if(!collidingWithPlayer && Math.abs(player.getBody().getPosition().x - body.getPosition().x) < player.getBodyWidth()){
+                    region = idling.getKeyFrame(stateTimer, true);
                 }
                 else {
-                    chattingIndex = 1;
+                    region = running.getKeyFrame(stateTimer, true);
                 }
-            }
-        }
-        else if(currentState == State.SNEAKING){
-            region = sneaking.getKeyFrame(stateTimer, true);
-        }
-        else if(currentState == State.SCARED){
-            region = scared.getKeyFrame(stateTimer, true);
-        }
-        else if(currentState == State.DYING){
-            region = dying.getKeyFrame(stateTimer, false);
-        }
-        else if(currentState == State.RUNNING){
-            region = running.getKeyFrame(stateTimer, true);
-        }
-        else {
-            region = running.getKeyFrame(stateTimer, true);
+
+                offsetX = sprite.isFlipX() ? 2 * MetalSlug.MAP_SCALE : (-2) * MetalSlug.MAP_SCALE;
+                break;
+            case IDLING:
+                region = idling.getKeyFrame(stateTimer, true);
+
+                offsetX = sprite.isFlipX() ? 4 * MetalSlug.MAP_SCALE : (-4) * MetalSlug.MAP_SCALE;
+                break;
+            case SEARCHING:
+                region = searching.getKeyFrame(stateTimer, true);
+
+                offsetX = sprite.isFlipX() ? 0 * MetalSlug.MAP_SCALE : (-0) * MetalSlug.MAP_SCALE;
+                break;
+            case DYING:
+            default:
+                region = dying.getKeyFrame(stateTimer, false);
+                break;
         }
 
         if((body.getLinearVelocity().x < 0 || !isRunningRight) && !region.isFlipX()){
@@ -273,35 +308,124 @@ public class Soldier extends Enemy{
             region.flip(true, false);
         }
 
-        return region;
+        sprite.setRegion(region);
+        if (sprite.isFlipX()) {
+            sprite.setBounds(body.getPosition().x + (bodyWidth / 2) - sprite.getRegionWidth() * MetalSlug.MAP_SCALE + offsetX, body.getPosition().y - (bodyHeight / 2) + offsetY, region.getRegionWidth() * MetalSlug.MAP_SCALE, region.getRegionHeight() * MetalSlug.MAP_SCALE);
+
+        } else {
+            sprite.setBounds(body.getPosition().x - (bodyWidth / 2) + offsetX, body.getPosition().y - (bodyHeight / 2) + offsetY, region.getRegionWidth() * MetalSlug.MAP_SCALE, region.getRegionHeight() * MetalSlug.MAP_SCALE);
+        }
+
+        switch(currentState){
+            case CHATTING:
+                if(chatting.get(chattingIndex).isAnimationFinished(stateTimer)){
+                    stateTimer = 0;
+                    int randomValue = randomizer.nextInt(10);
+                    if(randomValue == 9){
+                        chattingIndex = 2;
+                    }
+                    else if(randomValue == 8){
+                        chattingIndex = 0;
+                    }
+                    else {
+                        chattingIndex = 1;
+                    }
+                }
+                break;
+            case SNEAKING:
+                if(!collidingWithPlayer){
+                    if(Math.abs(player.getBody().getPosition().x - body.getPosition().x) < player.getBodyWidth()){
+                        stop(true, false);
+                        resetFrameTimer();
+                        stateStack.push(State.SEARCHING);
+                    }
+                    else if(player.getBody().getPosition().x < body.getPosition().x && body.getLinearVelocity().x >= (-0.2f)){
+                        move(new Vector2(-0.1f, 0));
+                        isRunningRight = false;
+                    }
+                    else if(player.getBody().getPosition().x > body.getPosition().x && body.getLinearVelocity().x <= 0.2f){
+                        move(new Vector2(0.1f, 0));
+                        isRunningRight = true;
+                    }
+                }
+                else if(collidingWithPlayer){
+                    stop(true, false);
+                    resetFrameTimer();
+                    setState(State.KNIFING);
+                }
+                break;
+            case SCARED:
+                if(scared.isAnimationFinished(stateTimer)){
+                    resetFrameTimer();
+                    setState(State.FLEEING);
+                    isRunningRight = !isRunningRight;
+                }
+                break;
+            case KNIFING:
+                if(knifing.isAnimationFinished(stateTimer)){
+                    if(collidingWithPlayer){
+                    }
+                    else {
+                        resetFrameTimer();
+                        setState(State.RUNNING);
+                    }
+                }
+                break;
+            case FLEEING:
+                if(!isRunningRight && body.getLinearVelocity().x >= (-0.8f)){
+                    move(new Vector2(-0.3f, 0));
+                }
+                else if(isRunningRight && body.getLinearVelocity().x <= 0.8f){
+                    move(new Vector2(0.3f, 0));
+                }
+                break;
+            case RUNNING:
+                if(!collidingWithPlayer){
+                    if(Math.abs(player.getBody().getPosition().x - body.getPosition().x) < player.getBodyWidth()){
+                        stop(true, false);
+                        resetFrameTimer();
+                        stateStack.push(State.SEARCHING);
+                    }
+                    else if(player.getBody().getPosition().x < body.getPosition().x && body.getLinearVelocity().x >= (-0.8f)){
+                        move(new Vector2(-0.3f, 0));
+                        isRunningRight = false;
+                    }
+                    else if(player.getBody().getPosition().x > body.getPosition().x && body.getLinearVelocity().x <= 0.8f){
+                        move(new Vector2(0.3f, 0));
+                        isRunningRight = true;
+                    }
+                }
+                else if(collidingWithPlayer){
+                    stop(true, false);
+                    resetFrameTimer();
+                    setState(State.KNIFING);
+                }
+                break;
+            case IDLING:
+                if(Math.abs(player.getBody().getPosition().x - body.getPosition().x) < 100 * MetalSlug.MAP_SCALE){
+                    resetFrameTimer();
+                    setState(State.SCARED);
+                }
+                break;
+            case SEARCHING:
+                if(Math.abs(player.getBody().getPosition().x - body.getPosition().x) >= player.getBodyWidth()){
+                    resetFrameTimer();
+                    stateStack.pop();
+                }
+                break;
+            case DYING:
+            default:
+                deathTimer += delta;
+                if(deathTimer >= 2f){
+                    remove();
+                }
+                break;
+        }
     }
 
-    private void setSpritePosition() {
-        float offsetX;
-        float offsetY;
-
-        if (currentState == State.CHATTING) {
-            offsetX = sprite.isFlipX() ? 10 * MetalSlug.MAP_SCALE : (-10) * MetalSlug.MAP_SCALE;
-            offsetY = 0 * MetalSlug.MAP_SCALE;
-        } else if (currentState == State.SNEAKING) {
-            offsetX = sprite.isFlipX() ? 12 * MetalSlug.MAP_SCALE : (-12) * MetalSlug.MAP_SCALE;
-            offsetY = 0 * MetalSlug.MAP_SCALE;
-        } else if (currentState == State.SCARED) {
-            offsetX = sprite.isFlipX() ? 12 * MetalSlug.MAP_SCALE : (-12) * MetalSlug.MAP_SCALE;
-            offsetY = 0 * MetalSlug.MAP_SCALE;
-        } else if (currentState == State.RUNNING) {
-            offsetX = sprite.isFlipX() ? 2 * MetalSlug.MAP_SCALE : (-2) * MetalSlug.MAP_SCALE;
-            offsetY = 0 * MetalSlug.MAP_SCALE;
-        } else {
-            offsetX = sprite.isFlipX() ? 0 * MetalSlug.MAP_SCALE : 0 * MetalSlug.MAP_SCALE;
-            offsetY = 0 * MetalSlug.MAP_SCALE;
-        }
-
-        if (sprite.isFlipX()) {
-            sprite.setPosition(body.getPosition().x + (bodyWidth / 2) - sprite.getRegionWidth() * MetalSlug.MAP_SCALE + offsetX, body.getPosition().y - (bodyHeight / 2) + offsetY);
-        } else {
-            sprite.setPosition(body.getPosition().x - (bodyWidth / 2) + offsetX, body.getPosition().y - (bodyHeight / 2) + offsetY);
-        }
+    @Override
+    public void draw(SpriteBatch batch){
+        sprite.draw(batch);
     }
 
     private void resetFrameTimer(){
@@ -313,14 +437,27 @@ public class Soldier extends Enemy{
         screen.getWorldCreator().getEnemies().removeValue(this, true);
     }
 
+    private void move(Vector2 vector){
+        body.applyLinearImpulse(vector, body.getWorldCenter(), true);
+    }
+
+    private void stop(boolean stopX, boolean stopY){
+        body.setLinearVelocity(new Vector2(stopX ? 0 : body.getLinearVelocity().x, stopY ? 0 : body.getLinearVelocity().y));
+    }
+
     public void kill(){
         Filter filter = new Filter();
         filter.maskBits = MetalSlug.GROUND_BITS | MetalSlug.OBJECT_BITS;
         body.getFixtureList().forEach(fixture -> fixture.setFilterData(filter));
-        isDying = true;
+        setState(State.DYING);
+        resetFrameTimer();
     }
 
     public void setAttackMode(AttackMode attackMode){
         this.attackMode = attackMode;
+    }
+
+    public void setCollidingWithPlayer(boolean value){
+        collidingWithPlayer = value;
     }
 }

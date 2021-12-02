@@ -215,17 +215,29 @@ public class MarcoRossi {
 
         fixtureDef.shape = headShape;
         fixtureDef.filter.categoryBits = MetalSlug.PLAYER_BITS;
-        fixtureDef.filter.maskBits = MetalSlug.GROUND_BITS | MetalSlug.OBJECT_BITS | MetalSlug.ENEMY_SENSOR_BITS;
+        fixtureDef.filter.maskBits = MetalSlug.GROUND_BITS | MetalSlug.OBJECT_BITS | MetalSlug.ENEMY_SENSOR_BITS | MetalSlug.HOSTAGE_SENSOR_BITS;
         body.createFixture(fixtureDef).setUserData(this);
 
         fixtureDef.shape = bodyShape;
         fixtureDef.filter.categoryBits = MetalSlug.PLAYER_BITS;
-        fixtureDef.filter.maskBits = MetalSlug.GROUND_BITS | MetalSlug.OBJECT_BITS | MetalSlug.ENEMY_SENSOR_BITS;;
+        fixtureDef.filter.maskBits = MetalSlug.GROUND_BITS | MetalSlug.OBJECT_BITS | MetalSlug.ENEMY_SENSOR_BITS | MetalSlug.HOSTAGE_SENSOR_BITS;;
         body.createFixture(fixtureDef).setUserData(this);
     }
 
-    public void handleInput(float delta){
-        switch(previousMovementState){
+    public void update(float delta){
+        torsoStateTimer += delta;
+        legsStateTimer += delta;
+        currentMovementState = movementStateStack.peek();
+        currentActionState = actionStateStack.peek();
+
+        TextureRegion torsoRegion;
+        TextureRegion legsRegion;
+        float torsoOffsetX = 0;
+        float torsoOffsetY = 0;
+        float legsOffsetX = 0;
+        float legsOffsetY = 0;
+
+        switch(currentMovementState){
             case STANDING:
                 if(Gdx.input.isKeyPressed(Input.Keys.RIGHT)){
                     move(new Vector2(0.3f, 0));
@@ -263,6 +275,22 @@ public class MarcoRossi {
                     setMovementState(MovementState.LOOKINGUP);
                     setActionState(ActionState.NEUTRAL);
                 }
+
+                if(currentActionState == ActionState.SHOOTING) {
+                    torsoRegion = shootingTorso.getKeyFrame(torsoStateTimer, false);
+                }
+                else if(currentActionState == ActionState.KNIFING){
+                    torsoRegion = knifingTorso.getKeyFrame(torsoStateTimer, false);
+                }
+                else{
+                    torsoRegion = standingTorso.getKeyFrame(torsoStateTimer, true);
+                }
+                legsRegion = standingLegs;
+
+                torsoOffsetX = torso.isFlipX() ? 1 * MetalSlug.MAP_SCALE : (-1) * MetalSlug.MAP_SCALE;
+                torsoOffsetY = (-7) * MetalSlug.MAP_SCALE;
+
+                legsOffsetX = legs.isFlipX() ? 1 * MetalSlug.MAP_SCALE : (-1) * MetalSlug.MAP_SCALE;
                 break;
             case RUNNING:
                 if((body.getPosition().x - 13 * MetalSlug.MAP_SCALE) <= (screen.getCamera().position.x - screen.getViewport().getWorldWidth() / 2)){
@@ -313,12 +341,36 @@ public class MarcoRossi {
                         setActionState(ActionState.SHOOTING);
                     }
                 }
+
+                if(currentActionState == ActionState.SHOOTING) {
+                    torsoRegion = shootingTorso.getKeyFrame(torsoStateTimer, false);
+                }
+                else if(currentActionState == ActionState.KNIFING){
+                    torsoRegion = knifingTorso.getKeyFrame(torsoStateTimer, false);
+                }
+                else{
+                    torsoRegion = runningTorso.getKeyFrame(torsoStateTimer, true);
+                }
+                legsRegion = runningLegs.getKeyFrame(legsStateTimer, true);
+
+                torsoOffsetX = torso.isFlipX() ? 1 * MetalSlug.MAP_SCALE : (-1) * MetalSlug.MAP_SCALE;
+                torsoOffsetY = (-7) * MetalSlug.MAP_SCALE;
+
+                legsOffsetX = legs.isFlipX() ? 6 * MetalSlug.MAP_SCALE : (-6) * MetalSlug.MAP_SCALE;
                 break;
             case JUMPING_UP:
                 if(body.getLinearVelocity().y == 0){
                     resetFrameTimers(true, true);
                     setMovementState(MovementState.STANDING);
                 }
+
+                torsoRegion = jumpingUpTorso.getKeyFrame(torsoStateTimer, false);
+                legsRegion = jumpingUpLegs.getKeyFrame(legsStateTimer, false);
+
+                torsoOffsetX = torso.isFlipX() ? 9 * MetalSlug.MAP_SCALE : (-9) * MetalSlug.MAP_SCALE;
+                torsoOffsetY = (-3) * MetalSlug.MAP_SCALE;
+
+                legsOffsetX = legs.isFlipX() ? 1 * MetalSlug.MAP_SCALE : (-1) * MetalSlug.MAP_SCALE;
                 break;
             case JUMPING_FORWARD:
                 if(body.getLinearVelocity().y == 0){
@@ -328,8 +380,17 @@ public class MarcoRossi {
                 if((body.getPosition().x - 13 * MetalSlug.MAP_SCALE) <= (screen.getCamera().position.x - screen.getViewport().getWorldWidth() / 2)){
                     stop(true, false);
                 }
+
+                torsoRegion = jumpingForwardTorso.getKeyFrame(torsoStateTimer, false);
+                legsRegion = jumpingForwardLegs.getKeyFrame(legsStateTimer, false);
+
+                torsoOffsetX = torso.isFlipX() ? 9 * MetalSlug.MAP_SCALE : (-9) * MetalSlug.MAP_SCALE;
+                torsoOffsetY = (-14) * MetalSlug.MAP_SCALE;
+
+                legsOffsetX = legs.isFlipX() ? 7 * MetalSlug.MAP_SCALE : (-7) * MetalSlug.MAP_SCALE;
                 break;
             case LOOKINGUP:
+            default:
                 if(lookingUpTransition && lookingUpTransitionTorso.isAnimationFinished(torsoStateTimer)){
                     lookingUpTransition = false;
                     resetFrameTimers(true, false);
@@ -364,9 +425,29 @@ public class MarcoRossi {
                     resetFrameTimers(true, false);
                     setActionState(ActionState.SHOOTING);
                 }
+
+                if(lookingUpTransition){
+                    torsoRegion = lookingUpTransitionTorso.getKeyFrame(torsoStateTimer, false);
+                }
+                else if(reverseLookingUpTransition){
+                    torsoRegion = reverseLookingUpTransitionTorso.getKeyFrame(torsoStateTimer, false);
+
+                }
+                else if(currentActionState == ActionState.SHOOTING) {
+                    torsoRegion = shootingLookingUpTorso.getKeyFrame(torsoStateTimer, false);
+                }
+                else {
+                    torsoRegion = idleLookingUpTorso.getKeyFrame(torsoStateTimer, true);
+                }
+                legsRegion = standingLegs;
+
+                torsoOffsetX = torso.isFlipX() ? 1 * MetalSlug.MAP_SCALE : (-1) * MetalSlug.MAP_SCALE;
+                torsoOffsetY = (-2) * MetalSlug.MAP_SCALE;
+
+                legsOffsetX = legs.isFlipX() ? 1 * MetalSlug.MAP_SCALE : (-1) * MetalSlug.MAP_SCALE;
                 break;
         }
-        switch (previousActionState){
+        switch (currentActionState){
             case SHOOTING:
                 if(Gdx.input.isKeyJustPressed(Input.Keys.SPACE)){
                     resetFrameTimers(true, false);
@@ -384,172 +465,42 @@ public class MarcoRossi {
                 }
                 break;
         }
-    }
 
-    public void update(float delta){
-        torsoStateTimer += delta;
-        legsStateTimer += delta;
+        if((body.getLinearVelocity().x < 0 || !isRunningRight) && !legsRegion.isFlipX()){
+            legsRegion.flip(true, false);
+        }
+        else if((body.getLinearVelocity().x > 0 || isRunningRight)  && legsRegion.isFlipX()){
+            legsRegion.flip(true, false);
+        }
 
-        previousMovementState = movementStateStack.peek();
-        previousActionState = actionStateStack.peek();
-        handleInput(delta);
-        currentMovementState = movementStateStack.peek();
-        currentActionState = actionStateStack.peek();
+        if((body.getLinearVelocity().x < 0 || !isRunningRight) && !torsoRegion.isFlipX()){
+            torsoRegion.flip(true, false);
+        }
+        else if((body.getLinearVelocity().x > 0 || isRunningRight)  && torsoRegion.isFlipX()){
+            torsoRegion.flip(true, false);
+        }
 
-        TextureRegion torsoRegion = getTorsoFrame();
-        TextureRegion legsRegion = getLegsFrame();
-        torso.setRegion(torsoRegion);
-        torso.setBounds(0, 0, torsoRegion.getRegionWidth() * MetalSlug.MAP_SCALE, torsoRegion.getRegionHeight() * MetalSlug.MAP_SCALE);
         legs.setRegion(legsRegion);
-        legs.setBounds(0, 0, legsRegion.getRegionWidth() * MetalSlug.MAP_SCALE, legsRegion.getRegionHeight() * MetalSlug.MAP_SCALE);
-        setLegsPosition();
-        setTorsoPosition();
+        torso.setRegion(torsoRegion);
+
+        if(legs.isFlipX()){
+            legs.setBounds(body.getPosition().x + (BODY_RECTANGLE_WIDTH / 2) - legs.getRegionWidth() * MetalSlug.MAP_SCALE + legsOffsetX, body.getPosition().y - (BODY_RECTANGLE_HEIGHT / 2) + legsOffsetY, legsRegion.getRegionWidth() * MetalSlug.MAP_SCALE, legsRegion.getRegionHeight() * MetalSlug.MAP_SCALE);
+        }
+        else{
+            legs.setBounds(body.getPosition().x - (BODY_RECTANGLE_WIDTH / 2)  + legsOffsetX, body.getPosition().y - (BODY_RECTANGLE_HEIGHT / 2) + legsOffsetY, legsRegion.getRegionWidth() * MetalSlug.MAP_SCALE, legsRegion.getRegionHeight() * MetalSlug.MAP_SCALE);
+        }
+
+        if(torso.isFlipX()){
+            torso.setBounds(body.getPosition().x + (BODY_RECTANGLE_WIDTH / 2) - torso.getRegionWidth() * MetalSlug.MAP_SCALE + torsoOffsetX, legs.getY() + legs.getHeight() + torsoOffsetY, torsoRegion.getRegionWidth() * MetalSlug.MAP_SCALE, torsoRegion.getRegionHeight() * MetalSlug.MAP_SCALE);
+        }
+        else{
+            torso.setBounds(body.getPosition().x - (BODY_RECTANGLE_WIDTH / 2)  + torsoOffsetX, legs.getY() + legs.getHeight() + torsoOffsetY, torsoRegion.getRegionWidth() * MetalSlug.MAP_SCALE, torsoRegion.getRegionHeight() * MetalSlug.MAP_SCALE);
+        }
     }
 
     public void draw(SpriteBatch batch){
         legs.draw(batch);
         torso.draw(batch);
-    }
-
-    private TextureRegion getTorsoFrame(){
-        TextureRegion region = new TextureRegion();
-
-        if(currentMovementState == MovementState.LOOKINGUP){
-            if(lookingUpTransition){
-                region = lookingUpTransitionTorso.getKeyFrame(torsoStateTimer, false);
-            }
-            else if(reverseLookingUpTransition){
-                region = reverseLookingUpTransitionTorso.getKeyFrame(torsoStateTimer, false);
-
-            }
-            else if(currentActionState == ActionState.SHOOTING) {
-                region = shootingLookingUpTorso.getKeyFrame(torsoStateTimer, false);
-            }
-            else {
-                region = idleLookingUpTorso.getKeyFrame(torsoStateTimer, true);
-            }
-        }
-        else if(currentMovementState == MovementState.JUMPING_UP){
-            region = jumpingUpTorso.getKeyFrame(torsoStateTimer, false);
-        }
-        else if(currentMovementState == MovementState.JUMPING_FORWARD){
-            region = jumpingForwardTorso.getKeyFrame(torsoStateTimer, false);
-        }
-        else if(currentMovementState == MovementState.RUNNING){
-            if(currentActionState == ActionState.SHOOTING) {
-                region = shootingTorso.getKeyFrame(torsoStateTimer, false);
-            }
-            else if(currentActionState == ActionState.KNIFING){
-                region = knifingTorso.getKeyFrame(torsoStateTimer, false);
-            }
-            else{
-                region = runningTorso.getKeyFrame(torsoStateTimer, true);
-            }
-        }
-        else if(currentMovementState == MovementState.STANDING){
-            if(currentActionState == ActionState.SHOOTING) {
-                region = shootingTorso.getKeyFrame(torsoStateTimer, false);
-            }
-            else if(currentActionState == ActionState.KNIFING){
-                region = knifingTorso.getKeyFrame(torsoStateTimer, false);
-            }
-            else{
-                region = standingTorso.getKeyFrame(torsoStateTimer, true);
-            }
-        }
-
-        if((body.getLinearVelocity().x < 0 || !isRunningRight) && !region.isFlipX()){
-            region.flip(true, false);
-        }
-        else if((body.getLinearVelocity().x > 0 || isRunningRight)  && region.isFlipX()){
-            region.flip(true, false);
-        }
-
-        return region;
-    }
-
-    private TextureRegion getLegsFrame(){
-        TextureRegion region;
-
-        if(currentMovementState == MovementState.JUMPING_UP){
-            region = jumpingUpLegs.getKeyFrame(legsStateTimer, false);
-        }
-        else if(currentMovementState == MovementState.JUMPING_FORWARD){
-            region = jumpingForwardLegs.getKeyFrame(legsStateTimer, false);
-        }
-        else if(currentMovementState == MovementState.RUNNING){
-            region = runningLegs.getKeyFrame(legsStateTimer, true);
-        }
-        else {
-            region = standingLegs;
-        }
-
-        if((body.getLinearVelocity().x < 0 || !isRunningRight) && !region.isFlipX()){
-            region.flip(true, false);
-        }
-        else if((body.getLinearVelocity().x > 0 || isRunningRight)  && region.isFlipX()){
-            region.flip(true, false);
-        }
-
-        return region;
-    }
-
-    private void setTorsoPosition(){
-        float offsetX;
-        float offsetY;
-
-        if(currentMovementState == MovementState.LOOKINGUP){
-            offsetX = torso.isFlipX() ? 1 * MetalSlug.MAP_SCALE : (-1) * MetalSlug.MAP_SCALE;
-            offsetY = (-2) * MetalSlug.MAP_SCALE;
-        }
-        else if(currentMovementState == MovementState.JUMPING_FORWARD){
-            offsetX = torso.isFlipX() ? 9 * MetalSlug.MAP_SCALE : (-9) * MetalSlug.MAP_SCALE;
-            offsetY = (-14) * MetalSlug.MAP_SCALE;
-        }
-        else if(currentMovementState == MovementState.JUMPING_UP){
-            offsetX = torso.isFlipX() ? 9 * MetalSlug.MAP_SCALE : (-9) * MetalSlug.MAP_SCALE;
-            offsetY = (-3) * MetalSlug.MAP_SCALE;
-        }
-        else {
-            offsetX = torso.isFlipX() ? 1 * MetalSlug.MAP_SCALE : (-1) * MetalSlug.MAP_SCALE;
-            offsetY = (-7) * MetalSlug.MAP_SCALE;
-        }
-
-        if(torso.isFlipX()){
-            torso.setPosition(body.getPosition().x + (BODY_RECTANGLE_WIDTH / 2) - torso.getRegionWidth() * MetalSlug.MAP_SCALE + offsetX, legs.getY() + legs.getHeight() + offsetY);
-        }
-        else{
-            torso.setPosition(body.getPosition().x - (BODY_RECTANGLE_WIDTH / 2)  + offsetX, legs.getY() + legs.getHeight() + offsetY);
-        }
-    }
-
-    private void setLegsPosition(){
-        float offsetX;
-        float offsetY;
-
-        if(currentMovementState == MovementState.JUMPING_UP){
-            offsetX = legs.isFlipX() ? 1 * MetalSlug.MAP_SCALE : (-1) * MetalSlug.MAP_SCALE;
-            offsetY = 0;
-        }
-        else if(currentMovementState == MovementState.JUMPING_FORWARD){
-            offsetX = legs.isFlipX() ? 7 * MetalSlug.MAP_SCALE : (-7) * MetalSlug.MAP_SCALE;
-            offsetY = 0;
-        }
-        else if(currentMovementState == MovementState.RUNNING){
-            offsetX = legs.isFlipX() ? 6 * MetalSlug.MAP_SCALE : (-6) * MetalSlug.MAP_SCALE;
-            offsetY = 0;
-        }
-        else{
-            offsetX = legs.isFlipX() ? 1 * MetalSlug.MAP_SCALE : (-1) * MetalSlug.MAP_SCALE;
-            offsetY = 0;
-        }
-
-        if(legs.isFlipX()){
-            legs.setPosition(body.getPosition().x + (BODY_RECTANGLE_WIDTH / 2) - legs.getRegionWidth() * MetalSlug.MAP_SCALE + offsetX, body.getPosition().y - (BODY_RECTANGLE_HEIGHT / 2) + offsetY);
-        }
-        else{
-            legs.setPosition(body.getPosition().x - (BODY_RECTANGLE_WIDTH / 2)  + offsetX, body.getPosition().y - (BODY_RECTANGLE_HEIGHT / 2) + offsetY);
-        }
     }
 
     public void setMovementState(MovementState state){
@@ -620,6 +571,14 @@ public class MarcoRossi {
 
     public Body getBody(){
         return body;
+    }
+
+    public float getBodyWidth(){
+        return bodyWidth;
+    }
+
+    public float getBodyHeight(){
+        return bodyHeight;
     }
 
     public boolean getIsRunningRight(){

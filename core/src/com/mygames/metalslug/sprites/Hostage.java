@@ -11,6 +11,7 @@ import com.mygames.metalslug.screens.MissionOneScreen;
 public abstract class Hostage {
     protected MissionOneScreen screen;
     protected World world;
+    protected MarcoRossi player;
     protected Vector2 position;
     protected Body body;
     protected Array<Fixture> fixtures;
@@ -19,9 +20,8 @@ public abstract class Hostage {
         this.screen = screen;
         this.world = screen.getWorld();
         this.position = position;
+        this.player = screen.getPlayer();
     }
-
-    protected abstract void defineHostage();
 
     public abstract void update(float delta);
 

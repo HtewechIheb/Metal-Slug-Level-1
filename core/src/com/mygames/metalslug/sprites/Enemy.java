@@ -11,11 +11,13 @@ public abstract class Enemy {
     protected World world;
     protected Vector2 position;
     protected Body body;
+    protected MarcoRossi player;
 
     protected Enemy(MissionOneScreen screen, Vector2 position){
         this.screen = screen;
         this.world = screen.getWorld();
         this.position = position;
+        this.player = screen.getPlayer();
     }
 
     protected abstract void defineEnemy();

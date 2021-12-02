@@ -68,11 +68,12 @@ public class MissionOneScreen implements Screen {
 
         world = new World(GRAVITY, true);
         debugRenderer = new Box2DDebugRenderer();
+
+        player = new MarcoRossi(this);
+
         worldCreator = new MissionOneWorldCreator(this);
         worldCreator.createWorld();
         world.setContactListener(new WorldContactListener());
-
-        player = new MarcoRossi(this);
     }
 
     public void handleInput(float delta){
@@ -165,6 +166,10 @@ public class MissionOneScreen implements Screen {
 
     public TiledMap getMap(){
         return map;
+    }
+
+    public MarcoRossi getPlayer(){
+        return player;
     }
 
     public TextureAtlas getPlayerTextureAtlas() {

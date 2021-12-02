@@ -95,8 +95,12 @@ public class MissionOneWorldCreator {
                         state = Soldier.State.SCARED;
                         break;
                     case "running":
-                    default:
                         state = Soldier.State.RUNNING;
+                        break;
+                    case "idling":
+                    default:
+                        state = Soldier.State.IDLING;
+                        break;
                 }
             }
             if(properties.containsKey("isRunningRight")){

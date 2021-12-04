@@ -27,4 +27,17 @@ public abstract class Enemy {
     public abstract void draw(SpriteBatch batch);
 
     public abstract void kill();
+
+    protected void remove(){
+        world.destroyBody(body);
+        screen.getWorldCreator().getEnemies().removeValue(this, true);
+    }
+
+    protected void move(Vector2 vector){
+        body.applyLinearImpulse(vector, body.getWorldCenter(), true);
+    }
+
+    protected void stop(boolean stopX, boolean stopY){
+        body.setLinearVelocity(new Vector2(stopX ? 0 : body.getLinearVelocity().x, stopY ? 0 : body.getLinearVelocity().y));
+    }
 }

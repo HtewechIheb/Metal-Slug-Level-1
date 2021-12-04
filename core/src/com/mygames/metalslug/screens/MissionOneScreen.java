@@ -44,6 +44,7 @@ public class MissionOneScreen implements Screen {
     private MissionOneWorldCreator worldCreator;
     private TextureAtlas playerTextureAtlas;
     private TextureAtlas soldierTextureAtlas;
+    private TextureAtlas helicopterTextureAtlas;
     private TextureAtlas shotsTextureAtlas;
     private TextureAtlas hoboTextureAtlas;
 
@@ -63,6 +64,7 @@ public class MissionOneScreen implements Screen {
 
         playerTextureAtlas = new TextureAtlas("sprites/player.atlas");
         soldierTextureAtlas = new TextureAtlas("sprites/soldier.atlas");
+        helicopterTextureAtlas = new TextureAtlas("sprites/helicopter.atlas");
         shotsTextureAtlas = new TextureAtlas("sprites/shots.atlas");
         hoboTextureAtlas = new TextureAtlas("sprites/hobo.atlas");
 
@@ -178,6 +180,10 @@ public class MissionOneScreen implements Screen {
 
     public TextureAtlas getSoldierTextureAtlas() {
         return soldierTextureAtlas;
+    }
+
+    public TextureAtlas getHelicopterTextureAtlas(){
+        return helicopterTextureAtlas;
     }
 
     public TextureAtlas getShotsTextureAtlas() {

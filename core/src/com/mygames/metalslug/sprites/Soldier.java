@@ -432,19 +432,6 @@ public class Soldier extends Enemy{
         stateTimer = 0;
     }
 
-    private void remove(){
-        world.destroyBody(body);
-        screen.getWorldCreator().getEnemies().removeValue(this, true);
-    }
-
-    private void move(Vector2 vector){
-        body.applyLinearImpulse(vector, body.getWorldCenter(), true);
-    }
-
-    private void stop(boolean stopX, boolean stopY){
-        body.setLinearVelocity(new Vector2(stopX ? 0 : body.getLinearVelocity().x, stopY ? 0 : body.getLinearVelocity().y));
-    }
-
     public void kill(){
         Filter filter = new Filter();
         filter.maskBits = MetalSlug.GROUND_BITS | MetalSlug.OBJECT_BITS;

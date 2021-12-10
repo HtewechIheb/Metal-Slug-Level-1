@@ -219,12 +219,12 @@ public class Soldier extends Enemy{
 
         fixtureDef.shape = headShape;
         fixtureDef.filter.categoryBits = MetalSlug.ENEMY_BITS;
-        fixtureDef.filter.maskBits = MetalSlug.GROUND_BITS | MetalSlug.OBJECT_BITS | MetalSlug.SHOT_BITS;
+        fixtureDef.filter.maskBits = MetalSlug.GROUND_BITS | MetalSlug.OBJECT_BITS | MetalSlug.PLAYER_SHOT_BITS;
         body.createFixture(fixtureDef).setUserData(this);
 
         fixtureDef.shape = bodyShape;
         fixtureDef.filter.categoryBits = MetalSlug.ENEMY_BITS;
-        fixtureDef.filter.maskBits = MetalSlug.GROUND_BITS | MetalSlug.OBJECT_BITS | MetalSlug.SHOT_BITS;
+        fixtureDef.filter.maskBits = MetalSlug.GROUND_BITS | MetalSlug.OBJECT_BITS | MetalSlug.PLAYER_SHOT_BITS;
         body.createFixture(fixtureDef).setUserData(this);
 
         fixtureDef.filter.categoryBits = MetalSlug.ENEMY_SENSOR_BITS;

@@ -7,6 +7,7 @@ import com.badlogic.gdx.physics.box2d.ContactListener;
 import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.Manifold;
 import com.mygames.metalslug.MetalSlug;
+import com.mygames.metalslug.sprites.Bomb;
 import com.mygames.metalslug.sprites.Enemy;
 import com.mygames.metalslug.sprites.Hobo;
 import com.mygames.metalslug.sprites.MarcoRossi;
@@ -32,8 +33,8 @@ public class WorldContactListener implements ContactListener {
                     ((Soldier) fixtureA.getUserData()).setCollidingWithPlayer(true);
                 }
                 break;
-            case MetalSlug.SHOT_BITS | MetalSlug.ENEMY_BITS:
-                if(fixtureA.getFilterData().categoryBits == MetalSlug.SHOT_BITS){
+            case MetalSlug.PLAYER_SHOT_BITS | MetalSlug.ENEMY_BITS:
+                if(fixtureA.getFilterData().categoryBits == MetalSlug.PLAYER_SHOT_BITS){
                     ((PistolShot) fixtureA.getUserData()).destroy();
                     ((Enemy) fixtureB.getUserData()).kill();
                 }
@@ -42,7 +43,7 @@ public class WorldContactListener implements ContactListener {
                     ((Enemy) fixtureA.getUserData()).kill();
                 }
                 break;
-            case MetalSlug.SHOT_BITS | MetalSlug.HOSTAGE_BITS:
+            case MetalSlug.PLAYER_SHOT_BITS | MetalSlug.HOSTAGE_BITS:
                 if(fixtureA.getFilterData().categoryBits == MetalSlug.HOSTAGE_BITS){
                     ((Hobo) fixtureA.getUserData()).release();
                     ((PistolShot) fixtureB.getUserData()).destroy();
@@ -58,6 +59,15 @@ public class WorldContactListener implements ContactListener {
                 }
                 else{
                     ((Hobo) fixtureB.getUserData()).save();
+                }
+                break;
+            case MetalSlug.HELICOPTER_BOMB_BITS | MetalSlug.GROUND_BITS:
+                Gdx.app.log("Collision", "Yes");
+                if(fixtureA.getFilterData().categoryBits == MetalSlug.HELICOPTER_BOMB_BITS){
+                    ((Bomb) fixtureA.getUserData()).explode();
+                }
+                else{
+                    ((Bomb) fixtureB.getUserData()).explode();
                 }
                 break;
         }

@@ -536,7 +536,7 @@ public class MarcoRossi {
             switch (weapon){
                 case PISTOL:
                 default:
-                    screen.getWorldCreator().createShot(Shot.ShotType.PISTOL, screen, this);
+                    screen.getWorldCreator().createShot(PistolShot.class, screen, this);
             }
         }
     }

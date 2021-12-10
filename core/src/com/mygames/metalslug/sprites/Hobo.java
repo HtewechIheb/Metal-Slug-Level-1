@@ -209,7 +209,7 @@ public class Hobo extends Hostage {
         bodyShape.setAsBox(bodyWidth / 2, bodyHeight / 2);
         fixtureDef.shape = bodyShape;
         fixtureDef.filter.categoryBits = MetalSlug.HOSTAGE_BITS;
-        fixtureDef.filter.maskBits = MetalSlug.GROUND_BITS | MetalSlug.OBJECT_BITS | MetalSlug.SHOT_BITS;
+        fixtureDef.filter.maskBits = MetalSlug.GROUND_BITS | MetalSlug.OBJECT_BITS | MetalSlug.PLAYER_SHOT_BITS;
         body.createFixture(fixtureDef).setUserData(this);
         fixtures = body.getFixtureList();
     }

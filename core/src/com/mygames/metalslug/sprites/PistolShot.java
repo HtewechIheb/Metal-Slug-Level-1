@@ -18,17 +18,17 @@ public class PistolShot extends Shot {
     private boolean toBeDestoryed = false;
 
     public PistolShot(MissionOneScreen screen, MarcoRossi player){
-        super(ShotType.PISTOL, screen, player);
+        super(screen, player);
 
         defineShot();
 
         sprite.setRegion(new TextureRegion(textureAtlas.findRegion("pistol-shot")));
         if(playerLookingUp){
-            sprite.setBounds(body.getPosition().x + sprite.getHeight() / 2, body.getPosition().y - sprite.getWidth() / 2, SHOT_WIDTH, SHOT_HEIGHT);
+            sprite.setBounds(body.getPosition().x + SHOT_HEIGHT / 2, body.getPosition().y - SHOT_WIDTH / 2, SHOT_WIDTH, SHOT_HEIGHT);
             sprite.rotate(90f);
         }
         else {
-            sprite.setBounds(body.getPosition().x - sprite.getWidth() / 2, body.getPosition().y - sprite.getHeight() / 2, SHOT_WIDTH, SHOT_HEIGHT);
+            sprite.setBounds(body.getPosition().x - SHOT_WIDTH / 2, body.getPosition().y - SHOT_HEIGHT / 2, SHOT_WIDTH, SHOT_HEIGHT);
         }
 
         if(playerLookingUp){
@@ -68,7 +68,7 @@ public class PistolShot extends Shot {
         PolygonShape shape = new PolygonShape();
         shape.setAsBox(SHOT_WIDTH / 2, SHOT_HEIGHT / 2);
         fixtureDef.shape = shape;
-        fixtureDef.filter.categoryBits = MetalSlug.SHOT_BITS;
+        fixtureDef.filter.categoryBits = MetalSlug.PLAYER_SHOT_BITS;
         fixtureDef.isSensor = true;
         body.createFixture(fixtureDef).setUserData(this);
     }
@@ -88,10 +88,10 @@ public class PistolShot extends Shot {
         }
         else {
             if(playerLookingUp){
-                sprite.setPosition(body.getPosition().x + sprite.getHeight() / 2, body.getPosition().y - sprite.getWidth() / 2);
+                sprite.setPosition(body.getPosition().x + SHOT_HEIGHT / 2, body.getPosition().y - SHOT_WIDTH / 2);
             }
             else {
-                sprite.setPosition(body.getPosition().x - sprite.getWidth() / 2, body.getPosition().y - sprite.getHeight() / 2);
+                sprite.setPosition(body.getPosition().x - SHOT_WIDTH / 2, body.getPosition().y - SHOT_HEIGHT / 2);
             }
         }
     }

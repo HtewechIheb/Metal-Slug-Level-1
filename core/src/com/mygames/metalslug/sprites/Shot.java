@@ -15,12 +15,7 @@ import com.mygames.metalslug.MetalSlug;
 import com.mygames.metalslug.screens.MissionOneScreen;
 
 public abstract class Shot {
-    public enum ShotType {
-        PISTOL
-    }
-
     protected Body body;
-    protected ShotType type;
     protected MarcoRossi player;
     protected MissionOneScreen screen;
     protected World world;
@@ -31,8 +26,7 @@ public abstract class Shot {
     protected TextureAtlas textureAtlas;
     protected Sprite sprite;
 
-    protected Shot(ShotType type, MissionOneScreen screen, MarcoRossi player){
-        this.type = type;
+    protected Shot(MissionOneScreen screen, MarcoRossi player){
         this.screen = screen;
         this.world = screen.getWorld();
         this.player = player;

@@ -15,6 +15,7 @@ import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Array;
 import com.mygames.metalslug.MetalSlug;
 import com.mygames.metalslug.screens.MissionOneScreen;
+import com.mygames.metalslug.sprites.Bomb;
 import com.mygames.metalslug.sprites.Enemy;
 import com.mygames.metalslug.sprites.Helicopter;
 import com.mygames.metalslug.sprites.Hobo;
@@ -32,6 +33,7 @@ public class MissionOneWorldCreator {
     private TiledMap map;
 
     private Array<Shot> shots;
+    private Array<Bomb> bombs;
     private Array<Enemy> enemies;
     private Array<Hostage> hostages;
 
@@ -41,6 +43,7 @@ public class MissionOneWorldCreator {
         map = screen.getMap();
 
         shots = new Array<>();
+        bombs = new Array<>();
         enemies = new Array<>();
         hostages = new Array<>();
     }
@@ -138,16 +141,21 @@ public class MissionOneWorldCreator {
         }
     }
 
-    public void createShot(Shot.ShotType type, MissionOneScreen screen, MarcoRossi player){
-        switch(type){
-            case PISTOL:
-            default:
-                shots.add(new PistolShot(screen, player));
+    public void createShot(Class<? extends Shot> shotClass, MissionOneScreen screen, MarcoRossi player){
+        if(shotClass == PistolShot.class){
+            shots.add(new PistolShot(screen, player));
         }
+    }
+
+    public void createBomb(MissionOneScreen screen, MarcoRossi player, Helicopter helicopter){
+        bombs.add(new Bomb(screen, player, helicopter));
     }
 
     public Array<Shot> getShots(){
         return shots;
+    }
+    public Array<Bomb> getBombs(){
+        return bombs;
     }
     public Array<Enemy> getEnemies(){
         return enemies;

@@ -25,6 +25,7 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.mygames.metalslug.MetalSlug;
+import com.mygames.metalslug.sprites.Bomb;
 import com.mygames.metalslug.sprites.Enemy;
 import com.mygames.metalslug.sprites.Hostage;
 import com.mygames.metalslug.sprites.MarcoRossi;
@@ -45,6 +46,7 @@ public class MissionOneScreen implements Screen {
     private TextureAtlas playerTextureAtlas;
     private TextureAtlas soldierTextureAtlas;
     private TextureAtlas helicopterTextureAtlas;
+    private TextureAtlas explosionsTextureAtlas;
     private TextureAtlas shotsTextureAtlas;
     private TextureAtlas hoboTextureAtlas;
 
@@ -65,6 +67,7 @@ public class MissionOneScreen implements Screen {
         playerTextureAtlas = new TextureAtlas("sprites/player.atlas");
         soldierTextureAtlas = new TextureAtlas("sprites/soldier.atlas");
         helicopterTextureAtlas = new TextureAtlas("sprites/helicopter.atlas");
+        explosionsTextureAtlas = new TextureAtlas("sprites/explosions.atlas");
         shotsTextureAtlas = new TextureAtlas("sprites/shots.atlas");
         hoboTextureAtlas = new TextureAtlas("sprites/hobo.atlas");
 
@@ -96,6 +99,9 @@ public class MissionOneScreen implements Screen {
         for(Enemy enemy : worldCreator.getEnemies()){
             enemy.update(delta);
         }
+        for(Bomb bomb : worldCreator.getBombs()){
+            bomb.update(delta);
+        }
         for(Hostage hostage : worldCreator.getHostages()){
             hostage.update(delta);
         }
@@ -118,6 +124,9 @@ public class MissionOneScreen implements Screen {
         game.batch.begin();
         for(Hostage hostage : worldCreator.getHostages()){
             hostage.draw(game.batch);
+        }
+        for(Bomb bomb : worldCreator.getBombs()){
+            bomb.draw(game.batch);
         }
         for(Enemy enemy : worldCreator.getEnemies()){
             enemy.draw(game.batch);
@@ -184,6 +193,10 @@ public class MissionOneScreen implements Screen {
 
     public TextureAtlas getHelicopterTextureAtlas(){
         return helicopterTextureAtlas;
+    }
+
+    public TextureAtlas getExplosionsTextureAtlas(){
+        return explosionsTextureAtlas;
     }
 
     public TextureAtlas getShotsTextureAtlas() {

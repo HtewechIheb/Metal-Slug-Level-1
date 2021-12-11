@@ -26,7 +26,7 @@ public abstract class Enemy {
 
     public abstract void draw(SpriteBatch batch);
 
-    public abstract void kill();
+    public abstract void hit();
 
     protected void remove(){
         world.destroyBody(body);

@@ -26,4 +26,8 @@ public abstract class Hostage {
     public abstract void update(float delta);
 
     public abstract void draw(SpriteBatch batch);
+
+    public abstract void release();
+
+    public abstract void save();
 }

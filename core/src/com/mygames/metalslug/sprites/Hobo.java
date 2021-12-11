@@ -189,7 +189,6 @@ public class Hobo extends Hostage {
     protected void defineCapturedHostage() {
         BodyDef bodyDef = new BodyDef();
         FixtureDef fixtureDef = new FixtureDef();
-        CircleShape headShape = new CircleShape();
         PolygonShape bodyShape = new PolygonShape();
 
         if(stateStack.peek() == State.HANGING){
@@ -211,7 +210,12 @@ public class Hobo extends Hostage {
         fixtureDef.filter.categoryBits = MetalSlug.HOSTAGE_BITS;
         fixtureDef.filter.maskBits = MetalSlug.GROUND_BITS | MetalSlug.OBJECT_BITS | MetalSlug.PLAYER_SHOT_BITS;
         body.createFixture(fixtureDef).setUserData(this);
-        fixtures = body.getFixtureList();
+
+        fixtureDef.shape = bodyShape;
+        fixtureDef.filter.categoryBits = MetalSlug.HOSTAGE_SENSOR_BITS;
+        fixtureDef.filter.maskBits = MetalSlug.GROUND_BITS | MetalSlug.OBJECT_BITS | MetalSlug.PLAYER_BITS;
+        fixtureDef.isSensor = true;
+        body.createFixture(fixtureDef).setUserData(this);
     }
 
     private void defineFreeHostage() {
@@ -254,7 +258,7 @@ public class Hobo extends Hostage {
         stateTimer += delta;
         currentState = stateStack.peek();
 
-        if(body.getPosition().x - player.getBody().getPosition().x < 192 * MetalSlug.MAP_SCALE){
+        if(body.getPosition().x - player.getBody().getPosition().x < 192 * MetalSlug.MAP_SCALE && (!releaseAnimationPlaying || released)){
             body.setActive(true);
         }
 
@@ -283,57 +287,22 @@ public class Hobo extends Hostage {
                 break;
             case SITTING:
                 region = sitting.getKeyFrame(stateTimer, true);
-
                 offsetX = sprite.isFlipX() ? 10 * MetalSlug.MAP_SCALE : (-10) * MetalSlug.MAP_SCALE;
                 break;
             case WAITING:
-                if(toBeSaved){
-                    stop(true, false);
-                    resetFrameTimer();
-                    setState(State.SALUTING);
-                }
-                else if(isRunningRight && body.getLinearVelocity().x <= 0.2f){
-                    move(new Vector2(0.1f, 0));
-                }
-                else if(!isRunningRight && body.getLinearVelocity().x >= (-0.2f)){
-                    move(new Vector2(-0.1f, 0));
-                }
-
                 region = waiting.getKeyFrame(stateTimer, true);
-                if(waiting.isAnimationFinished(stateTimer)){
-                    isRunningRight = !isRunningRight;
-                    resetFrameTimer();
-                }
-
                 offsetX = sprite.isFlipX() ? 12 * MetalSlug.MAP_SCALE : (-12) * MetalSlug.MAP_SCALE;
                 break;
             case SALUTING:
                 region = salute.getKeyFrame(stateTimer, false);
-                if(salute.isAnimationFinished(stateTimer)){
-                    resetFrameTimer();
-                    setState(State.SHORTING);
-                }
-
                 offsetX = sprite.isFlipX() ? 10 * MetalSlug.MAP_SCALE : (-10) * MetalSlug.MAP_SCALE;
                 break;
             case SHORTING:
                 region = shorts.getKeyFrame(stateTimer, false);
-                if(shorts.isAnimationFinished(stateTimer)){
-                    resetFrameTimer();
-                    setState(State.FLEEING);
-                }
-
                 offsetX = sprite.isFlipX() ? 4 * MetalSlug.MAP_SCALE : (-4) * MetalSlug.MAP_SCALE;
                 break;
             case FLEEING:
             default:
-                if(body.getLinearVelocity().x >= (-0.5f)){
-                    move(new Vector2(-0.1f, 0));
-                }
-                if(player.getBody().getPosition().x - body.getPosition().x  > 192 * MetalSlug.MAP_SCALE){
-                    remove();
-                }
-
                 region = fleeing.getKeyFrame(stateTimer, true);
                 offsetX = sprite.isFlipX() ? 12 * MetalSlug.MAP_SCALE : (-12) * MetalSlug.MAP_SCALE;
                 break;
@@ -353,6 +322,59 @@ public class Hobo extends Hostage {
         }
         else{
             sprite.setBounds(body.getPosition().x - (bodyWidth / 2)  + offsetX, body.getPosition().y - (bodyHeight / 2) + offsetY, region.getRegionWidth() * MetalSlug.MAP_SCALE, region.getRegionHeight() * MetalSlug.MAP_SCALE);
+        }
+
+        switch (currentState){
+            case HANGING:
+                break;
+            case SITTING:
+                break;
+            case WAITING:
+                if(toBeSaved){
+                    stop(true, false);
+                    resetFrameTimer();
+                    setState(State.SALUTING);
+                }
+                else if(isRunningRight && body.getLinearVelocity().x <= 0.2f){
+                    move(new Vector2(0.1f, 0));
+                }
+                else if(!isRunningRight && body.getLinearVelocity().x >= (-0.2f)){
+                    move(new Vector2(-0.1f, 0));
+                }
+
+                if(waiting.isAnimationFinished(stateTimer)){
+                    isRunningRight = !isRunningRight;
+                    resetFrameTimer();
+                }
+
+                break;
+            case SALUTING:
+                if(salute.isAnimationFinished(stateTimer)){
+                    resetFrameTimer();
+                    setState(State.SHORTING);
+                }
+
+                break;
+            case SHORTING:
+                if(shorts.isAnimationFinished(stateTimer)){
+                    resetFrameTimer();
+                    if(isRunningRight){
+                        isRunningRight = false;
+                    }
+                    setState(State.FLEEING);
+                }
+
+                break;
+            case FLEEING:
+            default:
+                if(body.getLinearVelocity().x >= (-0.5f)){
+                    move(new Vector2(-0.1f, 0));
+                }
+                if(player.getBody().getPosition().x - body.getPosition().x  > 192 * MetalSlug.MAP_SCALE){
+                    remove();
+                }
+
+                break;
         }
     }
 
@@ -447,11 +469,19 @@ public class Hobo extends Hostage {
         }
     }
 
+    @Override
     public void release(){
         toBeReleased = true;
     }
 
+    @Override
     public void save(){
-        toBeSaved = true;
+        if(!releaseAnimationPlaying){
+            toBeSaved = true;
+        }
+    }
+
+    public boolean getIsReleased(){
+        return !releaseAnimationPlaying && released;
     }
 }

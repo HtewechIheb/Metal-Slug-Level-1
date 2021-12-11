@@ -26,21 +26,24 @@ public class Helicopter extends Enemy {
     private final float HOVERING_DISTANCE = 2f * MetalSlug.MAP_SCALE;
 
     public enum State {
-        FLYING_DOWN,
         FLYING_RIGHT,
         FLYING_LEFT,
-        HOVERING
+        HOVERING,
+        EXPLODING
     }
 
-    private TextureAtlas textureAtlas;
+    private TextureAtlas helicopterTextureAtlas;
+    private TextureAtlas explosionsTextureAtlas;
     private Sprite bodySprite;
     private Sprite bladesSprite;
+    private Sprite fullBodySprite;
     private float bodyWidth;
     private float bodyHeight;
 
     private Animation<TextureRegion> hovering;
     private Animation<TextureRegion> flyingLeft;
     private Animation<TextureRegion> flyingRight;
+    private Animation<TextureRegion> exploding;
     private Array<TextureRegion> bodyFrames;
     private Array<Animation<TextureRegion>> hoveringBlades;
 
@@ -51,19 +54,24 @@ public class Helicopter extends Enemy {
     private Stack<State> stateStack;
     private float stateTimer;
     private float bombTimer;
+    private boolean singleSprite = false;
 
     private boolean isRunningRight = false;
+    private int healthPoints;
 
     public Helicopter(MissionOneScreen screen, Vector2 position){
         super(screen, position);
-        textureAtlas = screen.getHelicopterTextureAtlas();
+        helicopterTextureAtlas = screen.getHelicopterTextureAtlas();
+        explosionsTextureAtlas = screen.getExplosionsTextureAtlas();
         bodySprite = new Sprite();
         bladesSprite = new Sprite();
+        fullBodySprite = new Sprite();
         currentState = State.HOVERING;
         stateStack = new Stack<>();
         stateStack.push(currentState);
         stateTimer = 0;
         bombTimer = 0;
+        healthPoints = 20;
 
         defineEnemy();
         defineAnimations();
@@ -75,7 +83,7 @@ public class Helicopter extends Enemy {
 
         bodyFrames = new Array<>();
         for(i = 1; i < 8; i++){
-            frames.add(new TextureRegion(textureAtlas.findRegion(String.format("flying-%d", i))));
+            frames.add(new TextureRegion(helicopterTextureAtlas.findRegion(String.format("flying-%d", i))));
         }
         bodyFrames.addAll(frames);
         frames.clear();
@@ -89,10 +97,16 @@ public class Helicopter extends Enemy {
         flyingLeft = new Animation<TextureRegion>(0.2f, frames);
         frames.clear();
 
+        for(i = 1; i < 28; i++){
+            frames.add(new TextureRegion(explosionsTextureAtlas.findRegion(String.format("big-explosion-%d", i))));
+        }
+        exploding = new Animation<TextureRegion>(0.05f, frames);
+        frames.clear();
+
         hoveringBlades = new Array<>();
         for(i = 1; i < 8; i++){
             for(byte j = 1; j < 6; j++){
-                frames.add(new TextureRegion(textureAtlas.findRegion(String.format("blades-%d-%d", i, j))));
+                frames.add(new TextureRegion(helicopterTextureAtlas.findRegion(String.format("blades-%d-%d", i, j))));
             }
             hoveringBlades.add(new Animation<TextureRegion>(0.12f, frames));
             frames.clear();
@@ -112,6 +126,7 @@ public class Helicopter extends Enemy {
         bodyDef.position.set(position.x + (bodyWidth / 2), position.y + (bodyHeight / 2));
         bodyDef.gravityScale = 0.0f;
         body = world.createBody(bodyDef);
+        body.setActive(false);
 
         bodyShape.setAsBox(bodyWidth / 2, bodyHeight / 2);
         fixtureDef.shape = bodyShape;
@@ -126,12 +141,19 @@ public class Helicopter extends Enemy {
         bombTimer += delta;
         currentState = stateStack.peek();
 
-        TextureRegion bodyRegion;
-        TextureRegion bladesRegion;
+        if(body.getPosition().x - player.getBody().getPosition().x < 192 * MetalSlug.MAP_SCALE){
+            body.setActive(true);
+        }
+
+        TextureRegion bodyRegion = new TextureRegion();
+        TextureRegion bladesRegion = new TextureRegion();
+        TextureRegion fullBodyRegion = new TextureRegion();
         float bodyOffsetX = 0;
         float bodyOffsetY = 0;
         float bladesOffsetX = 0;
         float bladesOffsetY = 0;
+        float fullBodyOffsetX = 0;
+        float fullBodyOffsetY = 0;
         int index;
 
         if(flyingRightToHovering){
@@ -205,6 +227,10 @@ public class Helicopter extends Enemy {
                             bladesOffsetX = (-13f) * MetalSlug.MAP_SCALE;
                             bladesOffsetY = (-6f) * MetalSlug.MAP_SCALE;
                             break;
+                        case 2:
+                            bladesOffsetX = (-13f) * MetalSlug.MAP_SCALE;
+                            bladesOffsetY = (-7f) * MetalSlug.MAP_SCALE;
+                            break;
                     }
                 break;
                 case FLYING_LEFT:
@@ -214,10 +240,6 @@ public class Helicopter extends Enemy {
                     bladesRegion = hoveringBlades.get(index).getKeyFrame(stateTimer, true);
 
                     switch (index){
-                        case 3:
-                            bladesOffsetX = (-13f) * MetalSlug.MAP_SCALE;
-                            bladesOffsetY = (-6f) * MetalSlug.MAP_SCALE;
-                            break;
                         case 4:
                             bladesOffsetX = (-13f) * MetalSlug.MAP_SCALE;
                             bladesOffsetY = (-9f) * MetalSlug.MAP_SCALE;
@@ -232,9 +254,7 @@ public class Helicopter extends Enemy {
                             break;
                     }
                 break;
-                case FLYING_DOWN:
                 case HOVERING:
-                default:
                     bodyRegion = hovering.getKeyFrame(stateTimer, true);
 
                     index = bodyFrames.indexOf(bodyRegion, false);
@@ -243,23 +263,42 @@ public class Helicopter extends Enemy {
                     bladesOffsetX = (-13f) * MetalSlug.MAP_SCALE;
                     bladesOffsetY = (-6f) * MetalSlug.MAP_SCALE;
                 break;
+                case EXPLODING:
+                default:
+                    singleSprite = true;
+
+                    fullBodyRegion = exploding.getKeyFrame(stateTimer, false);
+
+                    break;
             }
         }
 
-        bodySprite.setRegion(bodyRegion);
-        bladesSprite.setRegion(bladesRegion);
+        if(!singleSprite){
+            bodySprite.setRegion(bodyRegion);
+            bladesSprite.setRegion(bladesRegion);
 
-        if (bodySprite.isFlipX()) {
-            bodySprite.setBounds(body.getPosition().x + (bodyWidth / 2) - bodySprite.getRegionWidth() * MetalSlug.MAP_SCALE + bodyOffsetX, body.getPosition().y - (bodyHeight / 2) + bodyOffsetY, bodyRegion.getRegionWidth() * MetalSlug.MAP_SCALE, bodyRegion.getRegionHeight() * MetalSlug.MAP_SCALE);
+            if (bodySprite.isFlipX()) {
+                bodySprite.setBounds(body.getPosition().x + (bodyWidth / 2) - bodySprite.getRegionWidth() * MetalSlug.MAP_SCALE + bodyOffsetX, body.getPosition().y - (bodyHeight / 2) + bodyOffsetY, bodyRegion.getRegionWidth() * MetalSlug.MAP_SCALE, bodyRegion.getRegionHeight() * MetalSlug.MAP_SCALE);
 
-        } else {
-            bodySprite.setBounds(body.getPosition().x - (bodyWidth / 2) + bodyOffsetX, body.getPosition().y - (bodyHeight / 2) + bodyOffsetY, bodyRegion.getRegionWidth() * MetalSlug.MAP_SCALE, bodyRegion.getRegionHeight() * MetalSlug.MAP_SCALE);
+            } else {
+                bodySprite.setBounds(body.getPosition().x - (bodyWidth / 2) + bodyOffsetX, body.getPosition().y - (bodyHeight / 2) + bodyOffsetY, bodyRegion.getRegionWidth() * MetalSlug.MAP_SCALE, bodyRegion.getRegionHeight() * MetalSlug.MAP_SCALE);
+            }
+
+            if (bladesSprite.isFlipX()) {
+                bladesSprite.setBounds(body.getPosition().x + (bodyWidth / 2) - bladesSprite.getRegionWidth() * MetalSlug.MAP_SCALE + bladesOffsetX, bodySprite.getY() + bodySprite.getRegionHeight() * MetalSlug.MAP_SCALE + bladesOffsetY, bladesRegion.getRegionWidth() * MetalSlug.MAP_SCALE, bladesRegion.getRegionHeight() * MetalSlug.MAP_SCALE);
+            } else {
+                bladesSprite.setBounds(body.getPosition().x + (bodyWidth / 2) - bladesSprite.getRegionWidth() * MetalSlug.MAP_SCALE + bladesOffsetX, bodySprite.getY() + bodySprite.getRegionHeight() * MetalSlug.MAP_SCALE + bladesOffsetY, bladesRegion.getRegionWidth() * MetalSlug.MAP_SCALE, bladesRegion.getRegionHeight() * MetalSlug.MAP_SCALE);
+            }
         }
+        else {
+            fullBodySprite.setRegion(fullBodyRegion);
 
-        if (bladesSprite.isFlipX()) {
-            bladesSprite.setBounds(body.getPosition().x + (bodyWidth / 2) - bladesSprite.getRegionWidth() * MetalSlug.MAP_SCALE + bladesOffsetX, bodySprite.getY() + bodySprite.getRegionHeight() * MetalSlug.MAP_SCALE + bladesOffsetY, bladesRegion.getRegionWidth() * MetalSlug.MAP_SCALE, bladesRegion.getRegionHeight() * MetalSlug.MAP_SCALE);
-        } else {
-            bladesSprite.setBounds(body.getPosition().x + (bodyWidth / 2) - bladesSprite.getRegionWidth() * MetalSlug.MAP_SCALE + bladesOffsetX, bodySprite.getY() + bodySprite.getRegionHeight() * MetalSlug.MAP_SCALE + bladesOffsetY, bladesRegion.getRegionWidth() * MetalSlug.MAP_SCALE, bladesRegion.getRegionHeight() * MetalSlug.MAP_SCALE);
+            if (fullBodySprite.isFlipX()) {
+                fullBodySprite.setBounds(body.getPosition().x + (bodyWidth / 2) - fullBodySprite.getRegionWidth() * MetalSlug.MAP_SCALE + fullBodyOffsetX, body.getPosition().y - (bodyHeight / 2) + fullBodyOffsetY, fullBodyRegion.getRegionWidth() * MetalSlug.MAP_SCALE, fullBodyRegion.getRegionHeight() * MetalSlug.MAP_SCALE);
+
+            } else {
+                fullBodySprite.setBounds(body.getPosition().x - (bodyWidth / 2) + fullBodyOffsetX, body.getPosition().y - (bodyHeight / 2) + fullBodyOffsetY, fullBodyRegion.getRegionWidth() * MetalSlug.MAP_SCALE, fullBodyRegion.getRegionHeight() * MetalSlug.MAP_SCALE);
+            }
         }
 
         switch (currentState){
@@ -287,8 +326,6 @@ public class Helicopter extends Enemy {
                     move(new Vector2(-0.2f, 0));
                 }
                 break;
-            case FLYING_DOWN:
-                break;
             case HOVERING:
                 if(body.getLinearVelocity().x != 0){
                     stop(true, false);
@@ -302,9 +339,15 @@ public class Helicopter extends Enemy {
                     setState(State.FLYING_LEFT);
                 }
                 break;
+            case EXPLODING:
+                if(exploding.isAnimationFinished(stateTimer)){
+                    remove();
+                }
+
+                break;
         }
 
-        if(bombTimer >= 2f){
+        if(bombTimer >= 2f && !player.getIsDead() && currentState != State.EXPLODING){
             Helicopter helicopter = this;
             Timer.schedule(new Timer.Task() {
                 @Override
@@ -318,8 +361,13 @@ public class Helicopter extends Enemy {
 
     @Override
     public void draw(SpriteBatch batch) {
-        bodySprite.draw(batch);
-        bladesSprite.draw(batch);
+        if(!singleSprite){
+            bodySprite.draw(batch);
+            bladesSprite.draw(batch);
+        }
+        else {
+            fullBodySprite.draw(batch);
+        }
     }
 
     private void setState(State state){
@@ -336,8 +384,17 @@ public class Helicopter extends Enemy {
     }
 
     @Override
-    public void kill() {
-
+    public void hit(){
+        if(currentState != State.EXPLODING){
+            healthPoints--;
+            if(healthPoints == 0){
+                stop(true, true);
+                flyingRightToHovering = false;
+                flyingLeftToHovering = false;
+                setState(State.EXPLODING);
+                resetFrameTimer();
+            }
+        }
     }
 
     public float getShotX(){

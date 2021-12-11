@@ -51,7 +51,9 @@ public class MissionOneScreen implements Screen {
     private TextureAtlas hoboTextureAtlas;
 
     private MarcoRossi player;
+
     private final Vector2 GRAVITY = new Vector2(0, -10);
+    private final float CAMERA_X_LIMIT = 1840f * MetalSlug.MAP_SCALE;
 
     public MissionOneScreen(MetalSlug game){
         this.game = game;
@@ -88,7 +90,7 @@ public class MissionOneScreen implements Screen {
         handleInput(delta);
 
         world.step(1/60f, 6, 2);
-        if(camera.position.x < player.getBody().getPosition().x){
+        if(camera.position.x < player.getBody().getPosition().x && (camera.position.x + camera.viewportWidth/2) < CAMERA_X_LIMIT){
             camera.position.x = player.getBody().getPosition().x;
             camera.update();
         }

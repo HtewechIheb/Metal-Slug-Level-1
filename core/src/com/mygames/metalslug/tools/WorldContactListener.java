@@ -25,22 +25,28 @@ public class WorldContactListener implements ContactListener {
         switch(collisionDef){
             case MetalSlug.PLAYER_BITS | MetalSlug.ENEMY_SENSOR_BITS:
                 if(fixtureA.getFilterData().categoryBits == MetalSlug.PLAYER_BITS && fixtureB.getUserData() instanceof Soldier){
-                    ((MarcoRossi) fixtureA.getUserData()).setAttackMode(MarcoRossi.AttackMode.MELEE);
-                    ((Soldier) fixtureB.getUserData()).setCollidingWithPlayer(true);
+                    MarcoRossi player = (MarcoRossi) fixtureA.getUserData();
+                    Soldier soldier = (Soldier) fixtureB.getUserData();
+
+                    player.addCollidingEnemy(soldier);
+                    soldier.setCollidingWithPlayer(true);
                 }
                 else if (fixtureB.getFilterData().categoryBits == MetalSlug.PLAYER_BITS && fixtureA.getUserData() instanceof Soldier){
-                    ((MarcoRossi) fixtureB.getUserData()).setAttackMode(MarcoRossi.AttackMode.MELEE);
-                    ((Soldier) fixtureA.getUserData()).setCollidingWithPlayer(true);
+                    MarcoRossi player = (MarcoRossi) fixtureB.getUserData();
+                    Soldier soldier = (Soldier) fixtureA.getUserData();
+
+                    player.addCollidingEnemy(soldier);
+                    soldier.setCollidingWithPlayer(true);
                 }
                 break;
             case MetalSlug.PLAYER_SHOT_BITS | MetalSlug.ENEMY_BITS:
                 if(fixtureA.getFilterData().categoryBits == MetalSlug.PLAYER_SHOT_BITS){
                     ((PistolShot) fixtureA.getUserData()).destroy();
-                    ((Enemy) fixtureB.getUserData()).kill();
+                    ((Enemy) fixtureB.getUserData()).hit();
                 }
                 else{
                     ((PistolShot) fixtureB.getUserData()).destroy();
-                    ((Enemy) fixtureA.getUserData()).kill();
+                    ((Enemy) fixtureA.getUserData()).hit();
                 }
                 break;
             case MetalSlug.PLAYER_SHOT_BITS | MetalSlug.HOSTAGE_BITS:
@@ -55,14 +61,30 @@ public class WorldContactListener implements ContactListener {
                 break;
             case MetalSlug.HOSTAGE_SENSOR_BITS | MetalSlug.PLAYER_BITS:
                 if(fixtureA.getFilterData().categoryBits == MetalSlug.HOSTAGE_SENSOR_BITS){
-                    ((Hobo) fixtureA.getUserData()).save();
+                    Hobo hobo = (Hobo) fixtureA.getUserData();
+                    MarcoRossi player = (MarcoRossi) fixtureB.getUserData();
+
+                    if(hobo.getIsReleased()){
+                        hobo.save();
+                    }
+                    else {
+                        player.addCollidingHostage(hobo);
+                    }
                 }
                 else{
-                    ((Hobo) fixtureB.getUserData()).save();
+                    Hobo hobo = (Hobo) fixtureB.getUserData();
+                    MarcoRossi player = (MarcoRossi) fixtureA.getUserData();
+
+                    if(hobo.getIsReleased()){
+                        hobo.save();
+                    }
+                    else {
+                        player.addCollidingHostage(hobo);
+                    }
                 }
                 break;
             case MetalSlug.HELICOPTER_BOMB_BITS | MetalSlug.GROUND_BITS:
-                Gdx.app.log("Collision", "Yes");
+            case MetalSlug.HELICOPTER_BOMB_BITS | MetalSlug.OBJECT_BITS:
                 if(fixtureA.getFilterData().categoryBits == MetalSlug.HELICOPTER_BOMB_BITS){
                     ((Bomb) fixtureA.getUserData()).explode();
                 }
@@ -83,12 +105,36 @@ public class WorldContactListener implements ContactListener {
         switch(collisionDef){
             case MetalSlug.PLAYER_BITS | MetalSlug.ENEMY_SENSOR_BITS:
                 if(fixtureA.getFilterData().categoryBits == MetalSlug.PLAYER_BITS && fixtureB.getUserData() instanceof Soldier){
-                    ((MarcoRossi) fixtureA.getUserData()).setAttackMode(MarcoRossi.AttackMode.WEAPON);
-                    ((Soldier) fixtureB.getUserData()).setCollidingWithPlayer(false);
+                    MarcoRossi player = (MarcoRossi) fixtureA.getUserData();
+                    Soldier soldier = (Soldier) fixtureB.getUserData();
+
+                    player.removeCollidingEnemy(soldier);
+                    soldier.setCollidingWithPlayer(false);
                 }
                 else if (fixtureB.getFilterData().categoryBits == MetalSlug.PLAYER_BITS && fixtureA.getUserData() instanceof Soldier){
-                    ((MarcoRossi) fixtureB.getUserData()).setAttackMode(MarcoRossi.AttackMode.WEAPON);
-                    ((Soldier) fixtureA.getUserData()).setCollidingWithPlayer(false);
+                    MarcoRossi player = (MarcoRossi) fixtureB.getUserData();
+                    Soldier soldier = (Soldier) fixtureA.getUserData();
+
+                    player.removeCollidingEnemy(soldier);
+                    soldier.setCollidingWithPlayer(false);
+                }
+                break;
+            case MetalSlug.PLAYER_BITS | MetalSlug.HOSTAGE_SENSOR_BITS:
+                if(fixtureA.getFilterData().categoryBits == MetalSlug.PLAYER_BITS){
+                    MarcoRossi player = (MarcoRossi) fixtureA.getUserData();
+                    Hobo hobo = (Hobo) fixtureB.getUserData();
+
+                    if(!hobo.getIsReleased()){
+                        player.removeCollidingHostage(hobo);
+                    }
+                }
+                else if (fixtureB.getFilterData().categoryBits == MetalSlug.PLAYER_BITS){
+                    MarcoRossi player = (MarcoRossi) fixtureB.getUserData();
+                    Hobo hobo = (Hobo) fixtureA.getUserData();
+
+                    if(!hobo.getIsReleased()){
+                        player.removeCollidingHostage(hobo);
+                    }
                 }
                 break;
         }

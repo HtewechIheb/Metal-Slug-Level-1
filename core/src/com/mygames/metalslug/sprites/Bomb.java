@@ -20,6 +20,8 @@ import com.mygames.metalslug.screens.MissionOneScreen;
 public class Bomb {
     private final float SHOT_WIDTH = 14f * MetalSlug.MAP_SCALE;
     private final float SHOT_HEIGHT = 25f  * MetalSlug.MAP_SCALE;
+    private final float EXPLOSION_RADIUS = 30f  * MetalSlug.MAP_SCALE;
+
     private final float offsetX = 4f * MetalSlug.MAP_SCALE;
     private final float offsetY = 20f * MetalSlug.MAP_SCALE;
     private final float explosionOffsetY = 8f * MetalSlug.MAP_SCALE;
@@ -46,6 +48,7 @@ public class Bomb {
     private Sprite sprite;
 
     private boolean toExplode = false;
+    private boolean playerInProximity = false;
 
     public Bomb(MissionOneScreen screen, MarcoRossi player, Helicopter helicopter){
         this.screen = screen;
@@ -92,6 +95,8 @@ public class Bomb {
     }
 
     public void update(float delta){
+        playerInProximity = Math.abs(player.getBody().getPosition().x - body.getPosition().x) < EXPLOSION_RADIUS;
+
         if(toExplode){
             position = new Vector2(body.getPosition());
             Gdx.app.log("Collision", position +"");
@@ -126,10 +131,18 @@ public class Bomb {
 
     public void explode(){
         toExplode = true;
+
+        if(playerInProximity && !player.getIsDead()){
+            player.kill(MarcoRossi.DeathType.BOMBED);
+        }
     }
 
     private void remove(){
         world.destroyBody(body);
         screen.getWorldCreator().getBombs().removeValue(this, true);
+    }
+
+    public boolean getPlayerInProximity(){
+        return playerInProximity;
     }
 }

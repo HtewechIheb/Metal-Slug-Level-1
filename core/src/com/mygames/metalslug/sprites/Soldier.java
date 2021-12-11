@@ -363,10 +363,15 @@ public class Soldier extends Enemy{
                 break;
             case KNIFING:
                 if(knifing.isAnimationFinished(stateTimer)){
+                    resetFrameTimer();
+
                     if(collidingWithPlayer){
+                        if(!player.getIsDead()){
+                            player.kill(MarcoRossi.DeathType.STABBED);
+                        }
+                        setState(State.IDLING);
                     }
                     else {
-                        resetFrameTimer();
                         setState(State.RUNNING);
                     }
                 }
@@ -402,7 +407,7 @@ public class Soldier extends Enemy{
                 }
                 break;
             case IDLING:
-                if(Math.abs(player.getBody().getPosition().x - body.getPosition().x) < 100 * MetalSlug.MAP_SCALE){
+                if(Math.abs(player.getBody().getPosition().x - body.getPosition().x) < 100 * MetalSlug.MAP_SCALE && !player.getIsDead()){
                     resetFrameTimer();
                     setState(State.SCARED);
                 }
@@ -432,7 +437,8 @@ public class Soldier extends Enemy{
         stateTimer = 0;
     }
 
-    public void kill(){
+    @Override
+    public void hit(){
         Filter filter = new Filter();
         filter.maskBits = MetalSlug.GROUND_BITS | MetalSlug.OBJECT_BITS;
         body.getFixtureList().forEach(fixture -> fixture.setFilterData(filter));

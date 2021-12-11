@@ -11,6 +11,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.CircleShape;
+import com.badlogic.gdx.physics.box2d.Filter;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
@@ -31,7 +32,8 @@ public class MarcoRossi {
         RUNNING,
         JUMPING_UP,
         JUMPING_FORWARD,
-        LOOKINGUP
+        LOOKINGUP,
+        DYING
     }
 
     public enum ActionState {
@@ -51,12 +53,18 @@ public class MarcoRossi {
         WEAPON
     }
 
+    public enum DeathType {
+        STABBED,
+        BOMBED
+    }
+
     private Body body;
     private MissionOneScreen screen;
     private World world;
     private TextureAtlas textureAtlas;
     private Sprite torso;
     private Sprite legs;
+    private Sprite fullBody;
     private float bodyWidth;
     private float bodyHeight;
     private Weapon weapon;
@@ -75,6 +83,8 @@ public class MarcoRossi {
     private Animation<TextureRegion> runningLegs;
     private Animation<TextureRegion> jumpingUpLegs;
     private Animation<TextureRegion> jumpingForwardLegs;
+    private Animation<TextureRegion> dying1;
+    private Animation<TextureRegion> dying2;
 
     private MovementState currentMovementState;
     private MovementState previousMovementState;
@@ -84,17 +94,24 @@ public class MarcoRossi {
     private Stack<ActionState> actionStateStack;
     private float torsoStateTimer;
     private float legsStateTimer;
+    private float fullBodyStateTimer;
     private AttackMode attackMode;
+    private DeathType deathType;
+    private boolean useFullBody = false;
 
     private boolean isRunningRight = true;
     private boolean lookingUpTransition = false;
     private boolean reverseLookingUpTransition = false;
+
+    private Array<Enemy> collidingEnemies;
+    private Array<Hostage> collidingHostages;
 
     public MarcoRossi(MissionOneScreen screen){
         this.screen = screen;
         world = screen.getWorld();
         torso = new Sprite();
         legs = new Sprite();
+        fullBody = new Sprite();
         textureAtlas = screen.getPlayerTextureAtlas();
         currentMovementState = MovementState.STANDING;
         previousMovementState = MovementState.STANDING;
@@ -106,10 +123,14 @@ public class MarcoRossi {
         actionStateStack.push(currentActionState);
         torsoStateTimer = 0;
         legsStateTimer = 0;
+        fullBodyStateTimer = 0;
         bodyWidth = 0;
         bodyHeight = 0;
         weapon = Weapon.PISTOL;
         attackMode = AttackMode.WEAPON;
+        deathType = DeathType.STABBED;
+        collidingEnemies = new Array<>();
+        collidingHostages = new Array<>();
 
         defineAnimations();
         defineCharacter();
@@ -194,6 +215,18 @@ public class MarcoRossi {
         frames.clear();
 
         standingLegs = new TextureRegion(textureAtlas.findRegion("idle-legs"));
+
+        for(i = 1; i < 20; i++){
+            frames.add(new TextureRegion(textureAtlas.findRegion(String.format("dying-1-%d", i))));
+        }
+        dying1 = new Animation<TextureRegion>(0.1f, frames);
+        frames.clear();
+
+        for(i = 1; i < 30; i++){
+            frames.add(new TextureRegion(textureAtlas.findRegion(String.format("dying-2-%d", i))));
+        }
+        dying2 = new Animation<TextureRegion>(0.07f, frames);
+        frames.clear();
     }
 
     private void defineCharacter(){
@@ -227,41 +260,52 @@ public class MarcoRossi {
     public void update(float delta){
         torsoStateTimer += delta;
         legsStateTimer += delta;
+        fullBodyStateTimer += delta;
         currentMovementState = movementStateStack.peek();
         currentActionState = actionStateStack.peek();
 
-        TextureRegion torsoRegion;
-        TextureRegion legsRegion;
+        if(collidingEnemies.size == 0 && collidingHostages.size == 0){
+            attackMode = AttackMode.WEAPON;
+        }
+        else {
+            attackMode = AttackMode.MELEE;
+        }
+
+        TextureRegion torsoRegion = new TextureRegion();
+        TextureRegion legsRegion = new TextureRegion();
+        TextureRegion fullBodyRegion = new TextureRegion();
         float torsoOffsetX = 0;
         float torsoOffsetY = 0;
         float legsOffsetX = 0;
         float legsOffsetY = 0;
+        float fullBodyOffsetX = 0;
+        float fullBodyOffsetY = 0;
 
         switch(currentMovementState){
             case STANDING:
                 if(Gdx.input.isKeyPressed(Input.Keys.RIGHT)){
                     move(new Vector2(0.3f, 0));
 
-                    resetFrameTimers(true, true);
+                    resetFrameTimers(true, true, false);
                     setMovementState(MovementState.RUNNING);
                 }
                 else if(Gdx.input.isKeyPressed(Input.Keys.LEFT) && (body.getPosition().x - 13 * MetalSlug.MAP_SCALE) > (screen.getCamera().position.x - screen.getViewport().getWorldWidth() / 2)){
                     move(new Vector2(-0.3f, 0));
 
-                    resetFrameTimers(true, true);
+                    resetFrameTimers(true, true, false);
                     setMovementState(MovementState.RUNNING);
                 }
                 else if(Gdx.input.isKeyPressed(Input.Keys.C)){
                     move(new Vector2(0f, 3.5f));
 
-                    resetFrameTimers(true, true);
+                    resetFrameTimers(true, true, false);
                     setMovementState(MovementState.JUMPING_UP);
                     setActionState(ActionState.NEUTRAL);
                 }
                 else if(Gdx.input.isKeyJustPressed(Input.Keys.SPACE)){
                     attack();
 
-                    resetFrameTimers(true, false);
+                    resetFrameTimers(true, false, false);
                     if(attackMode == AttackMode.MELEE){
                         setActionState(ActionState.KNIFING);
                     }
@@ -270,7 +314,7 @@ public class MarcoRossi {
                     }
                 }
                 else if(Gdx.input.isKeyPressed(Input.Keys.UP)){
-                    resetFrameTimers(true, false);
+                    resetFrameTimers(true, false, false);
                     lookingUpTransition = true;
                     setMovementState(MovementState.LOOKINGUP);
                     setActionState(ActionState.NEUTRAL);
@@ -296,13 +340,13 @@ public class MarcoRossi {
                 if((body.getPosition().x - 13 * MetalSlug.MAP_SCALE) <= (screen.getCamera().position.x - screen.getViewport().getWorldWidth() / 2)){
                     stop(true, false);
 
-                    resetFrameTimers(true, true);
+                    resetFrameTimers(true, true, false);
                     setMovementState(MovementState.STANDING);
                 }
                 if(!Gdx.input.isKeyPressed(Input.Keys.RIGHT) && !Gdx.input.isKeyPressed(Input.Keys.LEFT)){
                     stop(true, false);
 
-                    resetFrameTimers(true, true);
+                    resetFrameTimers(true, true, false);
                     setMovementState(MovementState.STANDING);
                 }
                 else if(Gdx.input.isKeyPressed(Input.Keys.RIGHT) && body.getLinearVelocity().x <= 1.5f){
@@ -326,14 +370,14 @@ public class MarcoRossi {
                 else if(Gdx.input.isKeyPressed(Input.Keys.C)){
                     move(new Vector2(0f, 3.5f));
 
-                    resetFrameTimers(true, true);
+                    resetFrameTimers(true, true, false);
                     setMovementState(MovementState.JUMPING_FORWARD);
                     setActionState(ActionState.NEUTRAL);
                 }
                 else if(Gdx.input.isKeyJustPressed(Input.Keys.SPACE) && currentActionState != ActionState.KNIFING){
                     attack();
 
-                    resetFrameTimers(true, false);
+                    resetFrameTimers(true, false, false);
                     if(attackMode == AttackMode.MELEE){
                         setActionState(ActionState.KNIFING);
                     }
@@ -360,7 +404,7 @@ public class MarcoRossi {
                 break;
             case JUMPING_UP:
                 if(body.getLinearVelocity().y == 0){
-                    resetFrameTimers(true, true);
+                    resetFrameTimers(true, true, false);
                     setMovementState(MovementState.STANDING);
                 }
 
@@ -374,7 +418,7 @@ public class MarcoRossi {
                 break;
             case JUMPING_FORWARD:
                 if(body.getLinearVelocity().y == 0){
-                    resetFrameTimers(true, true);
+                    resetFrameTimers(true, true, false);
                     setMovementState(MovementState.STANDING);
                 }
                 if((body.getPosition().x - 13 * MetalSlug.MAP_SCALE) <= (screen.getCamera().position.x - screen.getViewport().getWorldWidth() / 2)){
@@ -390,10 +434,9 @@ public class MarcoRossi {
                 legsOffsetX = legs.isFlipX() ? 7 * MetalSlug.MAP_SCALE : (-7) * MetalSlug.MAP_SCALE;
                 break;
             case LOOKINGUP:
-            default:
                 if(lookingUpTransition && lookingUpTransitionTorso.isAnimationFinished(torsoStateTimer)){
                     lookingUpTransition = false;
-                    resetFrameTimers(true, false);
+                    resetFrameTimers(true, false, false);
                 }
                 else if(reverseLookingUpTransition && Gdx.input.isKeyPressed(Input.Keys.UP)){
                     reverseLookingUpTransition = false;
@@ -406,11 +449,11 @@ public class MarcoRossi {
                     }
                     else if(!reverseLookingUpTransition){
                         reverseLookingUpTransition = true;
-                        resetFrameTimers(true, false);
+                        resetFrameTimers(true, false, false);
                     }
                     else if(reverseLookingUpTransition && reverseLookingUpTransitionTorso.isAnimationFinished(torsoStateTimer)){
                         reverseLookingUpTransition = false;
-                        resetFrameTimers(true, false);
+                        resetFrameTimers(true, false, false);
                         setMovementState(MovementState.STANDING);
                         setActionState(ActionState.NEUTRAL);
                     }
@@ -418,11 +461,11 @@ public class MarcoRossi {
                 else if(Gdx.input.isKeyJustPressed(Input.Keys.SPACE)){
                     if(lookingUpTransition){
                         lookingUpTransition = false;
-                        resetFrameTimers(true, false);
+                        resetFrameTimers(true, false, false);
                     }
                     attack();
 
-                    resetFrameTimers(true, false);
+                    resetFrameTimers(true, false, false);
                     setActionState(ActionState.SHOOTING);
                 }
 
@@ -446,61 +489,118 @@ public class MarcoRossi {
 
                 legsOffsetX = legs.isFlipX() ? 1 * MetalSlug.MAP_SCALE : (-1) * MetalSlug.MAP_SCALE;
                 break;
+            case DYING:
+            default:
+                useFullBody = true;
+
+                if(deathType == DeathType.STABBED){
+                    fullBodyRegion = dying1.getKeyFrame(fullBodyStateTimer, false);
+
+                    fullBodyOffsetX = fullBody.isFlipX() ? 10 * MetalSlug.MAP_SCALE : (-10) * MetalSlug.MAP_SCALE;
+                }
+                else {
+                    fullBodyRegion = dying2.getKeyFrame(fullBodyStateTimer, false);
+
+                    fullBodyOffsetX = fullBody.isFlipX() ? 20 * MetalSlug.MAP_SCALE : (-20) * MetalSlug.MAP_SCALE;
+                    fullBodyOffsetY = (-5) * MetalSlug.MAP_SCALE;
+                }
+
+                break;
         }
         switch (currentActionState){
             case SHOOTING:
                 if(Gdx.input.isKeyJustPressed(Input.Keys.SPACE)){
-                    resetFrameTimers(true, false);
+                    resetFrameTimers(true, false, false);
                     attack();
                 }
                 if(shootingTorso.isAnimationFinished(torsoStateTimer)){
-                    resetFrameTimers(true, true);
+                    resetFrameTimers(true, true, false);
                     setActionState(ActionState.NEUTRAL);
                 }
                 break;
             case KNIFING:
                 if(knifingTorso.isAnimationFinished(torsoStateTimer)){
-                    resetFrameTimers(true, true);
+                    Array.ArrayIterator<Enemy> enemyIterator = collidingEnemies.iterator();
+                    Array.ArrayIterator<Hostage> hostageIterator = collidingHostages.iterator();
+                    Enemy enemy;
+                    Hostage hostage;
+
+                    while(enemyIterator.hasNext()){
+                        enemy = enemyIterator.next();
+                        enemy.hit();
+                        enemyIterator.remove();
+                    }
+                    while(hostageIterator.hasNext()){
+                        hostage = hostageIterator.next();
+                        hostage.release();
+                        hostageIterator.remove();
+                    }
+
+                    resetFrameTimers(true, true, false);
                     setActionState(ActionState.NEUTRAL);
                 }
                 break;
         }
 
-        if((body.getLinearVelocity().x < 0 || !isRunningRight) && !legsRegion.isFlipX()){
-            legsRegion.flip(true, false);
-        }
-        else if((body.getLinearVelocity().x > 0 || isRunningRight)  && legsRegion.isFlipX()){
-            legsRegion.flip(true, false);
-        }
+        if(!useFullBody){
+            if((body.getLinearVelocity().x < 0 || !isRunningRight) && !legsRegion.isFlipX()){
+                legsRegion.flip(true, false);
+            }
+            else if((body.getLinearVelocity().x > 0 || isRunningRight)  && legsRegion.isFlipX()){
+                legsRegion.flip(true, false);
+            }
 
-        if((body.getLinearVelocity().x < 0 || !isRunningRight) && !torsoRegion.isFlipX()){
-            torsoRegion.flip(true, false);
-        }
-        else if((body.getLinearVelocity().x > 0 || isRunningRight)  && torsoRegion.isFlipX()){
-            torsoRegion.flip(true, false);
-        }
+            if((body.getLinearVelocity().x < 0 || !isRunningRight) && !torsoRegion.isFlipX()){
+                torsoRegion.flip(true, false);
+            }
+            else if((body.getLinearVelocity().x > 0 || isRunningRight)  && torsoRegion.isFlipX()){
+                torsoRegion.flip(true, false);
+            }
 
-        legs.setRegion(legsRegion);
-        torso.setRegion(torsoRegion);
+            legs.setRegion(legsRegion);
+            torso.setRegion(torsoRegion);
 
-        if(legs.isFlipX()){
-            legs.setBounds(body.getPosition().x + (BODY_RECTANGLE_WIDTH / 2) - legs.getRegionWidth() * MetalSlug.MAP_SCALE + legsOffsetX, body.getPosition().y - (BODY_RECTANGLE_HEIGHT / 2) + legsOffsetY, legsRegion.getRegionWidth() * MetalSlug.MAP_SCALE, legsRegion.getRegionHeight() * MetalSlug.MAP_SCALE);
-        }
-        else{
-            legs.setBounds(body.getPosition().x - (BODY_RECTANGLE_WIDTH / 2)  + legsOffsetX, body.getPosition().y - (BODY_RECTANGLE_HEIGHT / 2) + legsOffsetY, legsRegion.getRegionWidth() * MetalSlug.MAP_SCALE, legsRegion.getRegionHeight() * MetalSlug.MAP_SCALE);
-        }
+            if(legs.isFlipX()){
+                legs.setBounds(body.getPosition().x + (BODY_RECTANGLE_WIDTH / 2) - legs.getRegionWidth() * MetalSlug.MAP_SCALE + legsOffsetX, body.getPosition().y - (BODY_RECTANGLE_HEIGHT / 2) + legsOffsetY, legsRegion.getRegionWidth() * MetalSlug.MAP_SCALE, legsRegion.getRegionHeight() * MetalSlug.MAP_SCALE);
+            }
+            else{
+                legs.setBounds(body.getPosition().x - (BODY_RECTANGLE_WIDTH / 2)  + legsOffsetX, body.getPosition().y - (BODY_RECTANGLE_HEIGHT / 2) + legsOffsetY, legsRegion.getRegionWidth() * MetalSlug.MAP_SCALE, legsRegion.getRegionHeight() * MetalSlug.MAP_SCALE);
+            }
 
-        if(torso.isFlipX()){
-            torso.setBounds(body.getPosition().x + (BODY_RECTANGLE_WIDTH / 2) - torso.getRegionWidth() * MetalSlug.MAP_SCALE + torsoOffsetX, legs.getY() + legs.getHeight() + torsoOffsetY, torsoRegion.getRegionWidth() * MetalSlug.MAP_SCALE, torsoRegion.getRegionHeight() * MetalSlug.MAP_SCALE);
+            if(torso.isFlipX()){
+                torso.setBounds(body.getPosition().x + (BODY_RECTANGLE_WIDTH / 2) - torso.getRegionWidth() * MetalSlug.MAP_SCALE + torsoOffsetX, legs.getY() + legs.getHeight() + torsoOffsetY, torsoRegion.getRegionWidth() * MetalSlug.MAP_SCALE, torsoRegion.getRegionHeight() * MetalSlug.MAP_SCALE);
+            }
+            else{
+                torso.setBounds(body.getPosition().x - (BODY_RECTANGLE_WIDTH / 2)  + torsoOffsetX, legs.getY() + legs.getHeight() + torsoOffsetY, torsoRegion.getRegionWidth() * MetalSlug.MAP_SCALE, torsoRegion.getRegionHeight() * MetalSlug.MAP_SCALE);
+            }
         }
-        else{
-            torso.setBounds(body.getPosition().x - (BODY_RECTANGLE_WIDTH / 2)  + torsoOffsetX, legs.getY() + legs.getHeight() + torsoOffsetY, torsoRegion.getRegionWidth() * MetalSlug.MAP_SCALE, torsoRegion.getRegionHeight() * MetalSlug.MAP_SCALE);
+        else {
+            if((body.getLinearVelocity().x < 0 || !isRunningRight) && !fullBodyRegion.isFlipX()){
+                fullBodyRegion.flip(true, false);
+            }
+            else if((body.getLinearVelocity().x > 0 || isRunningRight)  && fullBodyRegion.isFlipX()){
+                fullBodyRegion.flip(true, false);
+            }
+
+            fullBody.setRegion(fullBodyRegion);
+
+            if(fullBody.isFlipX()){
+                fullBody.setBounds(body.getPosition().x + (BODY_RECTANGLE_WIDTH / 2) - fullBody.getRegionWidth() * MetalSlug.MAP_SCALE + fullBodyOffsetX, body.getPosition().y - (BODY_RECTANGLE_HEIGHT / 2) + fullBodyOffsetY, fullBodyRegion.getRegionWidth() * MetalSlug.MAP_SCALE, fullBodyRegion.getRegionHeight() * MetalSlug.MAP_SCALE);
+            }
+            else{
+                fullBody.setBounds(body.getPosition().x - (BODY_RECTANGLE_WIDTH / 2)  + fullBodyOffsetX, body.getPosition().y - (BODY_RECTANGLE_HEIGHT / 2) + fullBodyOffsetY, fullBodyRegion.getRegionWidth() * MetalSlug.MAP_SCALE, fullBodyRegion.getRegionHeight() * MetalSlug.MAP_SCALE);
+            }
         }
     }
 
     public void draw(SpriteBatch batch){
-        legs.draw(batch);
-        torso.draw(batch);
+        if(!useFullBody){
+            legs.draw(batch);
+            torso.draw(batch);
+        }
+        else {
+            fullBody.draw(batch);
+        }
     }
 
     public void setMovementState(MovementState state){
@@ -513,13 +613,15 @@ public class MarcoRossi {
         actionStateStack.push(state);
     }
 
-    private void resetFrameTimers(boolean torso, boolean legs){
+    private void resetFrameTimers(boolean torso, boolean legs, boolean fullBody){
         if(torso){
             torsoStateTimer = 0;
-
         }
         if(legs){
             legsStateTimer = 0;
+        }
+        if(fullBody){
+            fullBodyStateTimer = 0;
         }
     }
 
@@ -539,6 +641,17 @@ public class MarcoRossi {
                     screen.getWorldCreator().createShot(PistolShot.class, screen, this);
             }
         }
+    }
+
+    public void kill(DeathType deathType){
+        Filter filter = new Filter();
+        filter.maskBits = MetalSlug.GROUND_BITS | MetalSlug.OBJECT_BITS;
+        body.getFixtureList().forEach(fixture -> fixture.setFilterData(filter));
+
+        this.deathType = deathType;
+        setMovementState(MovementState.DYING);
+        setActionState(ActionState.NEUTRAL);
+        resetFrameTimers(true, true, true);
     }
 
     // Get the end position of the sprite on the X axis
@@ -569,6 +682,22 @@ public class MarcoRossi {
         }
     }
 
+    public void addCollidingEnemy(Enemy enemy){
+        collidingEnemies.add(enemy);
+    }
+
+    public void removeCollidingEnemy(Enemy enemy){
+        collidingEnemies.removeValue(enemy, true);
+    }
+
+    public void addCollidingHostage(Hostage hostage){
+        collidingHostages.add(hostage);
+    }
+
+    public void removeCollidingHostage(Hostage hostage){
+        collidingHostages.removeValue(hostage, true);
+    }
+
     public Body getBody(){
         return body;
     }
@@ -587,6 +716,10 @@ public class MarcoRossi {
 
     public boolean getIsLookingUp(){
         return currentMovementState == MovementState.LOOKINGUP;
+    }
+
+    public boolean getIsDead(){
+        return currentMovementState == MovementState.DYING;
     }
 
     public void setAttackMode(AttackMode attackMode){

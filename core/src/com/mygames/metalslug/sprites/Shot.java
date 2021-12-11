@@ -11,10 +11,11 @@ import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
+import com.badlogic.gdx.utils.Disposable;
 import com.mygames.metalslug.MetalSlug;
 import com.mygames.metalslug.screens.MissionOneScreen;
 
-public abstract class Shot {
+public abstract class Shot implements Disposable {
     protected Body body;
     protected MarcoRossi player;
     protected MissionOneScreen screen;
@@ -43,4 +44,6 @@ public abstract class Shot {
     public abstract void draw(SpriteBatch batch);
 
     public abstract void destroy();
+
+    public abstract void dispose();
 }

@@ -4,6 +4,9 @@ import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
@@ -41,6 +44,7 @@ public class MissionOneScreen implements Screen {
     private TiledMap map;
     private TiledMapRenderer mapRenderer;
     private World world;
+    private AssetManager assetManager;
     private Box2DDebugRenderer debugRenderer;
     private MissionOneWorldCreator worldCreator;
     private TextureAtlas playerTextureAtlas;
@@ -51,12 +55,14 @@ public class MissionOneScreen implements Screen {
     private TextureAtlas hoboTextureAtlas;
 
     private MarcoRossi player;
+    private Music music;
 
     private final Vector2 GRAVITY = new Vector2(0, -10);
-    private final float CAMERA_X_LIMIT = 1840f * MetalSlug.MAP_SCALE;
+    public final float CAMERA_X_LIMIT = 1840f * MetalSlug.MAP_SCALE;
 
-    public MissionOneScreen(MetalSlug game){
+    public MissionOneScreen(MetalSlug game, AssetManager assetManager){
         this.game = game;
+        this.assetManager = assetManager;
 
         camera = new OrthographicCamera();
         viewport = new FitViewport(MetalSlug.V_WIDTH * MetalSlug.MAP_SCALE, MetalSlug.V_HEIGHT * MetalSlug.MAP_SCALE, camera);
@@ -81,6 +87,12 @@ public class MissionOneScreen implements Screen {
         worldCreator = new MissionOneWorldCreator(this);
         worldCreator.createWorld();
         world.setContactListener(new WorldContactListener());
+
+        music = this.assetManager.get("audio/music/missionone.mp3", Music.class);
+        music.setLooping(true);
+        music.play();
+
+        this.assetManager.get("audio/sounds/missionone_start.mp3", Sound.class).play();
     }
 
     public void handleInput(float delta){
@@ -162,7 +174,29 @@ public class MissionOneScreen implements Screen {
 
     @Override
     public void dispose() {
-
+        map.dispose();
+        world.dispose();
+        assetManager.dispose();
+        debugRenderer.dispose();
+        playerTextureAtlas.dispose();
+        soldierTextureAtlas.dispose();
+        helicopterTextureAtlas.dispose();
+        explosionsTextureAtlas.dispose();
+        shotsTextureAtlas.dispose();
+        hoboTextureAtlas.dispose();
+        for(Hostage hostage : worldCreator.getHostages()){
+            hostage.dispose();
+        }
+        for(Bomb bomb : worldCreator.getBombs()){
+            bomb.dispose();
+        }
+        for(Enemy enemy : worldCreator.getEnemies()){
+            enemy.dispose();
+        }
+        for(Shot shot : worldCreator.getShots()){
+            shot.dispose();
+        }
+        player.dispose();
     }
 
     public Viewport getViewport() {
@@ -211,5 +245,9 @@ public class MissionOneScreen implements Screen {
 
     public MissionOneWorldCreator getWorldCreator(){
         return worldCreator;
+    }
+
+    public AssetManager getAssetManager(){
+        return assetManager;
     }
 }

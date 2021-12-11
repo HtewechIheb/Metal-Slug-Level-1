@@ -1,6 +1,8 @@
 package com.mygames.metalslug.sprites;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -14,10 +16,11 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.Disposable;
 import com.mygames.metalslug.MetalSlug;
 import com.mygames.metalslug.screens.MissionOneScreen;
 
-public class Bomb {
+public class Bomb implements Disposable {
     private final float SHOT_WIDTH = 14f * MetalSlug.MAP_SCALE;
     private final float SHOT_HEIGHT = 25f  * MetalSlug.MAP_SCALE;
     private final float EXPLOSION_RADIUS = 30f  * MetalSlug.MAP_SCALE;
@@ -35,6 +38,7 @@ public class Bomb {
     private MarcoRossi player;
     private MissionOneScreen screen;
     private World world;
+    private AssetManager assetManager;
     private Helicopter helicopter;
     private Vector2 position;
 
@@ -53,6 +57,7 @@ public class Bomb {
     public Bomb(MissionOneScreen screen, MarcoRossi player, Helicopter helicopter){
         this.screen = screen;
         this.world = screen.getWorld();
+        this.assetManager = screen.getAssetManager();
         this.player = player;
         this.helicopter = helicopter;
         helicopterTextureAtlas = screen.getHelicopterTextureAtlas();
@@ -130,6 +135,7 @@ public class Bomb {
     }
 
     public void explode(){
+        assetManager.get("audio/sounds/bomb_detonation.mp3", Sound.class).play();
         toExplode = true;
 
         if(playerInProximity && !player.getIsDead()){
@@ -144,5 +150,10 @@ public class Bomb {
 
     public boolean getPlayerInProximity(){
         return playerInProximity;
+    }
+
+    @Override
+    public void dispose() {
+
     }
 }

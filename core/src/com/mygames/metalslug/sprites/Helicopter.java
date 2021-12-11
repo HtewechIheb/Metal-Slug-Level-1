@@ -1,6 +1,8 @@
 package com.mygames.metalslug.sprites;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -56,7 +58,7 @@ public class Helicopter extends Enemy {
     private float bombTimer;
     private boolean singleSprite = false;
 
-    private boolean isRunningRight = false;
+    private boolean bombingActive = false;
     private int healthPoints;
 
     public Helicopter(MissionOneScreen screen, Vector2 position){
@@ -143,6 +145,7 @@ public class Helicopter extends Enemy {
 
         if(body.getPosition().x - player.getBody().getPosition().x < 192 * MetalSlug.MAP_SCALE){
             body.setActive(true);
+            bombingActive = true;
         }
 
         TextureRegion bodyRegion = new TextureRegion();
@@ -347,7 +350,7 @@ public class Helicopter extends Enemy {
                 break;
         }
 
-        if(bombTimer >= 2f && !player.getIsDead() && currentState != State.EXPLODING){
+        if(bombingActive && bombTimer >= 2f && !player.getIsDead() && currentState != State.EXPLODING){
             Helicopter helicopter = this;
             Timer.schedule(new Timer.Task() {
                 @Override
@@ -388,6 +391,7 @@ public class Helicopter extends Enemy {
         if(currentState != State.EXPLODING){
             healthPoints--;
             if(healthPoints == 0){
+                assetManager.get("audio/sounds/helicopter_explosion.mp3", Sound.class).play();
                 stop(true, true);
                 flyingRightToHovering = false;
                 flyingLeftToHovering = false;
@@ -395,6 +399,11 @@ public class Helicopter extends Enemy {
                 resetFrameTimer();
             }
         }
+    }
+
+    @Override
+    public void dispose(){
+
     }
 
     public float getShotX(){

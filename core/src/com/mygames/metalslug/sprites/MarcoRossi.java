@@ -2,6 +2,8 @@ package com.mygames.metalslug.sprites;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -16,13 +18,14 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.Disposable;
 import com.mygames.metalslug.MetalSlug;
 import com.mygames.metalslug.screens.MissionOneScreen;
 
 import java.util.EnumSet;
 import java.util.Stack;
 
-public class MarcoRossi {
+public class MarcoRossi implements Disposable {
     private final float BODY_RECTANGLE_WIDTH = 18f * MetalSlug.MAP_SCALE;
     private final float BODY_RECTANGLE_HEIGHT = 30f * MetalSlug.MAP_SCALE;
     private final float HEAD_CIRCLE_RADIUS = 9f * MetalSlug.MAP_SCALE;
@@ -68,6 +71,7 @@ public class MarcoRossi {
     private float bodyWidth;
     private float bodyHeight;
     private Weapon weapon;
+    private AssetManager assetManager;
 
     private Animation<TextureRegion> standingTorso;
     private Animation<TextureRegion> runningTorso;
@@ -83,8 +87,8 @@ public class MarcoRossi {
     private Animation<TextureRegion> runningLegs;
     private Animation<TextureRegion> jumpingUpLegs;
     private Animation<TextureRegion> jumpingForwardLegs;
-    private Animation<TextureRegion> dying1;
-    private Animation<TextureRegion> dying2;
+    private Animation<TextureRegion> stabbed;
+    private Animation<TextureRegion> bombed;
 
     private MovementState currentMovementState;
     private MovementState previousMovementState;
@@ -108,6 +112,7 @@ public class MarcoRossi {
 
     public MarcoRossi(MissionOneScreen screen){
         this.screen = screen;
+        this.assetManager = screen.getAssetManager();
         world = screen.getWorld();
         torso = new Sprite();
         legs = new Sprite();
@@ -219,13 +224,13 @@ public class MarcoRossi {
         for(i = 1; i < 20; i++){
             frames.add(new TextureRegion(textureAtlas.findRegion(String.format("dying-1-%d", i))));
         }
-        dying1 = new Animation<TextureRegion>(0.1f, frames);
+        stabbed = new Animation<TextureRegion>(0.1f, frames);
         frames.clear();
 
         for(i = 1; i < 30; i++){
             frames.add(new TextureRegion(textureAtlas.findRegion(String.format("dying-2-%d", i))));
         }
-        dying2 = new Animation<TextureRegion>(0.07f, frames);
+        bombed = new Animation<TextureRegion>(0.05f, frames);
         frames.clear();
     }
 
@@ -494,12 +499,12 @@ public class MarcoRossi {
                 useFullBody = true;
 
                 if(deathType == DeathType.STABBED){
-                    fullBodyRegion = dying1.getKeyFrame(fullBodyStateTimer, false);
+                    fullBodyRegion = stabbed.getKeyFrame(fullBodyStateTimer, false);
 
                     fullBodyOffsetX = fullBody.isFlipX() ? 10 * MetalSlug.MAP_SCALE : (-10) * MetalSlug.MAP_SCALE;
                 }
                 else {
-                    fullBodyRegion = dying2.getKeyFrame(fullBodyStateTimer, false);
+                    fullBodyRegion = bombed.getKeyFrame(fullBodyStateTimer, false);
 
                     fullBodyOffsetX = fullBody.isFlipX() ? 20 * MetalSlug.MAP_SCALE : (-20) * MetalSlug.MAP_SCALE;
                     fullBodyOffsetY = (-5) * MetalSlug.MAP_SCALE;
@@ -638,12 +643,15 @@ public class MarcoRossi {
             switch (weapon){
                 case PISTOL:
                 default:
+                    assetManager.get("audio/sounds/pistol_shot.mp3", Sound.class).play();
                     screen.getWorldCreator().createShot(PistolShot.class, screen, this);
+                    break;
             }
         }
     }
 
     public void kill(DeathType deathType){
+        assetManager.get("audio/sounds/player_death.mp3", Sound.class).play();
         Filter filter = new Filter();
         filter.maskBits = MetalSlug.GROUND_BITS | MetalSlug.OBJECT_BITS;
         body.getFixtureList().forEach(fixture -> fixture.setFilterData(filter));
@@ -698,6 +706,10 @@ public class MarcoRossi {
         collidingHostages.removeValue(hostage, true);
     }
 
+    public void dispose(){
+
+    }
+
     public Body getBody(){
         return body;
     }
@@ -720,9 +732,5 @@ public class MarcoRossi {
 
     public boolean getIsDead(){
         return currentMovementState == MovementState.DYING;
-    }
-
-    public void setAttackMode(AttackMode attackMode){
-        this.attackMode = attackMode;
     }
 }

@@ -2,6 +2,8 @@ package com.mygames.metalslug.sprites;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -75,10 +77,8 @@ public class Soldier extends Enemy{
 
     private Random randomizer;
 
-
     public Soldier(MissionOneScreen screen, Vector2 position, State state, boolean isRunningRight){
         super(screen, position);
-
         textureAtlas = screen.getSoldierTextureAtlas();
         sprite = new Sprite();
         stateTimer = 0;
@@ -377,7 +377,10 @@ public class Soldier extends Enemy{
                 }
                 break;
             case FLEEING:
-                if(!isRunningRight && body.getLinearVelocity().x >= (-0.8f)){
+                if(body.getPosition().x > screen.CAMERA_X_LIMIT){
+                    remove();
+                }
+                else if(!isRunningRight && body.getLinearVelocity().x >= (-0.8f)){
                     move(new Vector2(-0.3f, 0));
                 }
                 else if(isRunningRight && body.getLinearVelocity().x <= 0.8f){
@@ -408,6 +411,7 @@ public class Soldier extends Enemy{
                 break;
             case IDLING:
                 if(Math.abs(player.getBody().getPosition().x - body.getPosition().x) < 100 * MetalSlug.MAP_SCALE && !player.getIsDead()){
+                    assetManager.get("audio/sounds/soldier_scared.mp3", Sound.class).play();
                     resetFrameTimer();
                     setState(State.SCARED);
                 }
@@ -439,6 +443,7 @@ public class Soldier extends Enemy{
 
     @Override
     public void hit(){
+        assetManager.get("audio/sounds/soldier_death.mp3", Sound.class).play();
         Filter filter = new Filter();
         filter.maskBits = MetalSlug.GROUND_BITS | MetalSlug.OBJECT_BITS;
         body.getFixtureList().forEach(fixture -> fixture.setFilterData(filter));
@@ -446,8 +451,9 @@ public class Soldier extends Enemy{
         resetFrameTimer();
     }
 
-    public void setAttackMode(AttackMode attackMode){
-        this.attackMode = attackMode;
+    @Override
+    public void dispose(){
+
     }
 
     public void setCollidingWithPlayer(boolean value){

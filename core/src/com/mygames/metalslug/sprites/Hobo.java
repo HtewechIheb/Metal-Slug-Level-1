@@ -2,6 +2,9 @@ package com.mygames.metalslug.sprites;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -54,7 +57,6 @@ public class Hobo extends Hostage {
     private Animation<TextureRegion> salute;
 
     private State currentState;
-    private State previousState;
     private State capturedState;
     private Stack<State> stateStack;
     private float stateTimer;
@@ -71,7 +73,6 @@ public class Hobo extends Hostage {
 
     public Hobo(MissionOneScreen screen, Vector2 position, State state){
         super(screen, position);
-
         textureAtlas = screen.getHoboTextureAtlas();
         sprite = new Sprite();
         releaseSprite = new Sprite();
@@ -80,7 +81,6 @@ public class Hobo extends Hostage {
         bodyWidth = 0;
         bodyHeight = 0;
         currentState = state;
-        previousState = state;
         capturedState = state;
         stateStack = new Stack<>();
         stateStack.push(currentState);
@@ -333,7 +333,7 @@ public class Hobo extends Hostage {
                 if(toBeSaved){
                     stop(true, false);
                     resetFrameTimer();
-                    setState(State.SALUTING);
+                    setState(State.SHORTING);
                 }
                 else if(isRunningRight && body.getLinearVelocity().x <= 0.2f){
                     move(new Vector2(0.1f, 0));
@@ -351,13 +351,6 @@ public class Hobo extends Hostage {
             case SALUTING:
                 if(salute.isAnimationFinished(stateTimer)){
                     resetFrameTimer();
-                    setState(State.SHORTING);
-                }
-
-                break;
-            case SHORTING:
-                if(shorts.isAnimationFinished(stateTimer)){
-                    resetFrameTimer();
                     if(isRunningRight){
                         isRunningRight = false;
                     }
@@ -365,10 +358,17 @@ public class Hobo extends Hostage {
                 }
 
                 break;
+            case SHORTING:
+                if(shorts.isAnimationFinished(stateTimer)){
+                    resetFrameTimer();
+                    setState(State.SALUTING);
+                }
+
+                break;
             case FLEEING:
             default:
-                if(body.getLinearVelocity().x >= (-0.5f)){
-                    move(new Vector2(-0.1f, 0));
+                if(body.getLinearVelocity().x >= (-0.8f)){
+                    move(new Vector2(-0.2f, 0));
                 }
                 if(player.getBody().getPosition().x - body.getPosition().x  > 192 * MetalSlug.MAP_SCALE){
                     remove();
@@ -476,9 +476,15 @@ public class Hobo extends Hostage {
 
     @Override
     public void save(){
-        if(!releaseAnimationPlaying){
+        if((!releaseAnimationPlaying || released) && !toBeSaved){
+            assetManager.get("audio/sounds/hostage_thankyou.mp3", Sound.class).play();
             toBeSaved = true;
         }
+    }
+
+    @Override
+    public void dispose(){
+
     }
 
     public boolean getIsReleased(){

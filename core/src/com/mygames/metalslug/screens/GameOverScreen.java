@@ -1,9 +1,9 @@
 package com.mygames.metalslug.screens;
 
-import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -28,6 +28,8 @@ public class GameOverScreen implements Screen {
         viewport = new FitViewport(MetalSlug.V_WIDTH, MetalSlug.V_HEIGHT, new OrthographicCamera());
         stage = new Stage(viewport, game.batch);
 
+        this.assetManager.get("audio/sounds/game_over.mp3", Sound.class).play();
+
         Label.LabelStyle font = new Label.LabelStyle(new BitmapFont(), Color.WHITE);
 
         Label gameOverLabel = new Label("GAME OVER!", font);
@@ -42,6 +44,7 @@ public class GameOverScreen implements Screen {
         table.add(playAgainLabel).expandX().padTop(10);
 
         stage.addActor(table);
+        Gdx.input.setInputProcessor(stage);
     }
 
     @Override
@@ -52,7 +55,7 @@ public class GameOverScreen implements Screen {
     @Override
     public void render(float delta) {
         if(Gdx.input.justTouched()){
-            game.setScreen(new MissionOneScreen(game, assetManager));
+            game.setScreen(new WelcomeScreen(game, assetManager));
             dispose();
         }
         ScreenUtils.clear(0, 0, 0, 1);
@@ -61,7 +64,7 @@ public class GameOverScreen implements Screen {
 
     @Override
     public void resize(int width, int height) {
-
+        viewport.update(width, height);
     }
 
     @Override

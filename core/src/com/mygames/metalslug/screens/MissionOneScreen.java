@@ -34,9 +34,20 @@ import com.mygames.metalslug.sprites.Enemy;
 import com.mygames.metalslug.sprites.Hostage;
 import com.mygames.metalslug.sprites.MarcoRossi;
 import com.mygames.metalslug.sprites.Shot;
+import com.mygames.metalslug.sprites.Soldier;
 import com.mygames.metalslug.stages.Hud;
 import com.mygames.metalslug.tools.MissionOneWorldCreator;
 import com.mygames.metalslug.tools.WorldContactListener;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.Writer;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 
 public class MissionOneScreen implements Screen {
     public final float CAMERA_X_LIMIT = 1840f * MetalSlug.MAP_SCALE;
@@ -46,6 +57,7 @@ public class MissionOneScreen implements Screen {
 
     private final Vector2 GRAVITY = new Vector2(0, -10);
     private int score = 0;
+    private String playerName;
 
     private MetalSlug game;
     private Viewport viewport;
@@ -68,9 +80,10 @@ public class MissionOneScreen implements Screen {
     private MarcoRossi player;
     private Music music;
 
-    public MissionOneScreen(MetalSlug game, AssetManager assetManager){
+    public MissionOneScreen(MetalSlug game, AssetManager assetManager, String playerName){
         this.game = game;
         this.assetManager = assetManager;
+        this.playerName = playerName;
 
         camera = new OrthographicCamera();
         viewport = new FitViewport(MetalSlug.V_WIDTH * MetalSlug.MAP_SCALE, MetalSlug.V_HEIGHT * MetalSlug.MAP_SCALE, camera);
@@ -222,6 +235,19 @@ public class MissionOneScreen implements Screen {
     }
 
     public void gameWon(){
+        for(Enemy enemy: getWorldCreator().getEnemies()){
+            if(enemy instanceof Soldier){
+                ((Soldier)enemy).flee();
+            }
+        }
+
+        try(PrintWriter printWriter = new PrintWriter(new FileOutputStream("scores.txt", true), true, StandardCharsets.UTF_8)) {
+            printWriter.println(playerName + "\t" + score + "\t" + LocalDateTime.now());
+        }
+        catch (FileNotFoundException exception){
+            Gdx.app.log("ERROR", "Could not write score to file!");
+        }
+
         Timer.schedule(new Timer.Task() {
             @Override
             public void run() {
@@ -232,6 +258,7 @@ public class MissionOneScreen implements Screen {
         Timer.schedule(new Timer.Task() {
             @Override
             public void run() {
+                music.stop();
                 game.setScreen(new GameWonScreen(game, assetManager, score));
             }
         }, 8f);

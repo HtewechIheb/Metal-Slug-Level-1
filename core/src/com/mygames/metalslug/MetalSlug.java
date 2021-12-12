@@ -1,15 +1,11 @@
 package com.mygames.metalslug;
 
-import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.utils.ScreenUtils;
-import com.mygames.metalslug.screens.MissionOneScreen;
-import com.mygames.metalslug.screens.NameScreen;
+import com.mygames.metalslug.screens.WelcomeScreen;
 
 public class MetalSlug extends Game {
 	public static final int V_WIDTH = 304;
@@ -43,8 +39,11 @@ public class MetalSlug extends Game {
 		assetManager.load("audio/sounds/hostage_thankyou.mp3", Sound.class);
 		assetManager.load("audio/sounds/bomb_detonation.mp3", Sound.class);
 		assetManager.load("audio/sounds/helicopter_explosion.mp3", Sound.class);
+		assetManager.load("audio/sounds/button_press.wav", Sound.class);
+		assetManager.load("audio/sounds/game_won.mp3", Sound.class);
+		assetManager.load("audio/sounds/game_over.mp3", Sound.class);
 		assetManager.finishLoading();
-		setScreen(new MissionOneScreen(this, assetManager));
+		setScreen(new WelcomeScreen(this, assetManager));
 	}
 
 	@Override

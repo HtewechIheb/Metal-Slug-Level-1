@@ -74,6 +74,7 @@ public class Soldier extends Enemy{
     private boolean isRunningRight = false;
     private boolean isDying = false;
     private boolean collidingWithPlayer = false;
+    private boolean attackCanceled = false;
 
     private Random randomizer;
 
@@ -351,28 +352,30 @@ public class Soldier extends Enemy{
                 else if(collidingWithPlayer){
                     stop(true, false);
                     resetFrameTimer();
-                    setState(State.KNIFING);
+                    stateStack.push(State.KNIFING);
+                    attackCanceled = false;
                 }
                 break;
             case SCARED:
                 if(scared.isAnimationFinished(stateTimer)){
                     resetFrameTimer();
                     setState(State.FLEEING);
-                    isRunningRight = !isRunningRight;
+                    isRunningRight = true;
                 }
                 break;
             case KNIFING:
                 if(knifing.isAnimationFinished(stateTimer)){
                     resetFrameTimer();
 
-                    if(collidingWithPlayer){
-                        if(!player.getIsDead()){
-                            player.kill(MarcoRossi.DeathType.STABBED);
-                        }
-                        setState(State.IDLING);
+                    if(collidingWithPlayer && !player.getIsDead() && !attackCanceled){
+                        player.kill(MarcoRossi.DeathType.STABBED);
                     }
-                    else {
-                        setState(State.RUNNING);
+
+                    resetFrameTimer();
+                    stateStack.pop();
+
+                    if(player.getIsDead()){
+                        setState(State.IDLING);
                     }
                 }
                 break;
@@ -406,7 +409,8 @@ public class Soldier extends Enemy{
                 else if(collidingWithPlayer){
                     stop(true, false);
                     resetFrameTimer();
-                    setState(State.KNIFING);
+                    stateStack.push(State.KNIFING);
+                    attackCanceled = false;
                 }
                 break;
             case IDLING:
@@ -452,12 +456,20 @@ public class Soldier extends Enemy{
         resetFrameTimer();
     }
 
+    public void flee(){
+        setState(State.FLEEING);
+        resetFrameTimer();
+    }
+
     @Override
     public void dispose(){
 
     }
 
     public void setCollidingWithPlayer(boolean value){
+        if(value == false && collidingWithPlayer == true && currentState == State.KNIFING){
+            attackCanceled = true;
+        }
         collidingWithPlayer = value;
     }
 }

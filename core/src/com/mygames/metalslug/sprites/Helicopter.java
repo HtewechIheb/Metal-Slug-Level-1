@@ -392,11 +392,13 @@ public class Helicopter extends Enemy {
             healthPoints--;
             if(healthPoints == 0){
                 assetManager.get("audio/sounds/helicopter_explosion.mp3", Sound.class).play();
+                screen.addScore(screen.HELICOPTER_KILL_SCORE);
                 stop(true, true);
                 flyingRightToHovering = false;
                 flyingLeftToHovering = false;
                 setState(State.EXPLODING);
                 resetFrameTimer();
+                screen.gameWon();
             }
         }
     }

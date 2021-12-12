@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.mygames.metalslug.screens.MissionOneScreen;
+import com.mygames.metalslug.screens.NameScreen;
 
 public class MetalSlug extends Game {
 	public static final int V_WIDTH = 304;
@@ -34,6 +35,7 @@ public class MetalSlug extends Game {
 		assetManager = new AssetManager();
 		assetManager.load("audio/music/missionone.mp3", Music.class);
 		assetManager.load("audio/sounds/missionone_start.mp3", Sound.class);
+		assetManager.load("audio/sounds/mission_complete.mp3", Sound.class);
 		assetManager.load("audio/sounds/pistol_shot.mp3", Sound.class);
 		assetManager.load("audio/sounds/player_death.mp3", Sound.class);
 		assetManager.load("audio/sounds/soldier_death.mp3", Sound.class);

@@ -478,6 +478,7 @@ public class Hobo extends Hostage {
     public void save(){
         if((!releaseAnimationPlaying || released) && !toBeSaved){
             assetManager.get("audio/sounds/hostage_thankyou.mp3", Sound.class).play();
+            screen.addScore(screen.HOSTAGE_SAVE_SCORE);
             toBeSaved = true;
         }
     }

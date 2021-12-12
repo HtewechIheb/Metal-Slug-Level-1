@@ -25,6 +25,7 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.ScreenUtils;
+import com.badlogic.gdx.utils.Timer;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.mygames.metalslug.MetalSlug;
@@ -33,10 +34,19 @@ import com.mygames.metalslug.sprites.Enemy;
 import com.mygames.metalslug.sprites.Hostage;
 import com.mygames.metalslug.sprites.MarcoRossi;
 import com.mygames.metalslug.sprites.Shot;
+import com.mygames.metalslug.stages.Hud;
 import com.mygames.metalslug.tools.MissionOneWorldCreator;
 import com.mygames.metalslug.tools.WorldContactListener;
 
 public class MissionOneScreen implements Screen {
+    public final float CAMERA_X_LIMIT = 1840f * MetalSlug.MAP_SCALE;
+    public final int ENEMY_KILL_SCORE = 100;
+    public final int HOSTAGE_SAVE_SCORE = 100;
+    public final int HELICOPTER_KILL_SCORE = 1000;
+
+    private final Vector2 GRAVITY = new Vector2(0, -10);
+    private int score = 0;
+
     private MetalSlug game;
     private Viewport viewport;
     private OrthographicCamera camera;
@@ -54,11 +64,9 @@ public class MissionOneScreen implements Screen {
     private TextureAtlas shotsTextureAtlas;
     private TextureAtlas hoboTextureAtlas;
 
+    private Hud hud;
     private MarcoRossi player;
     private Music music;
-
-    private final Vector2 GRAVITY = new Vector2(0, -10);
-    public final float CAMERA_X_LIMIT = 1840f * MetalSlug.MAP_SCALE;
 
     public MissionOneScreen(MetalSlug game, AssetManager assetManager){
         this.game = game;
@@ -67,6 +75,8 @@ public class MissionOneScreen implements Screen {
         camera = new OrthographicCamera();
         viewport = new FitViewport(MetalSlug.V_WIDTH * MetalSlug.MAP_SCALE, MetalSlug.V_HEIGHT * MetalSlug.MAP_SCALE, camera);
         camera.position.set(viewport.getWorldWidth() / 2, viewport.getWorldHeight() / 2, 0);
+
+        hud = new Hud(game.batch, this);
 
         mapLoader = new TmxMapLoader();
         map = mapLoader.load("missionone.tmx");
@@ -102,6 +112,7 @@ public class MissionOneScreen implements Screen {
         handleInput(delta);
 
         world.step(1/60f, 6, 2);
+
         if(camera.position.x < player.getBody().getPosition().x && (camera.position.x + camera.viewportWidth/2) < CAMERA_X_LIMIT){
             camera.position.x = player.getBody().getPosition().x;
             camera.update();
@@ -121,6 +132,8 @@ public class MissionOneScreen implements Screen {
         }
         player.update(delta);
         mapRenderer.setView(camera);
+
+        hud.update(delta);
     }
 
     @Override
@@ -150,6 +163,7 @@ public class MissionOneScreen implements Screen {
         }
         player.draw(game.batch);
         game.batch.end();
+        hud.stage.draw();
     }
 
     @Override
@@ -197,6 +211,40 @@ public class MissionOneScreen implements Screen {
             shot.dispose();
         }
         player.dispose();
+    }
+
+    public void addScore(int value){
+        score += value;
+    }
+
+    public int getScore(){
+        return score;
+    }
+
+    public void gameWon(){
+        Timer.schedule(new Timer.Task() {
+            @Override
+            public void run() {
+                assetManager.get("audio/sounds/mission_complete.mp3", Sound.class).play();
+
+            }
+        }, 2f);
+        Timer.schedule(new Timer.Task() {
+            @Override
+            public void run() {
+                game.setScreen(new GameWonScreen(game, assetManager, score));
+            }
+        }, 8f);
+    }
+
+    public void gameOver(){
+        Timer.schedule(new Timer.Task() {
+            @Override
+            public void run() {
+                music.stop();
+                game.setScreen(new GameOverScreen(game, assetManager));
+            }
+        }, 5f);
     }
 
     public Viewport getViewport() {

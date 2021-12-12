@@ -19,6 +19,7 @@ import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
+import com.badlogic.gdx.utils.Timer;
 import com.mygames.metalslug.MetalSlug;
 import com.mygames.metalslug.screens.MissionOneScreen;
 
@@ -29,6 +30,7 @@ public class MarcoRossi implements Disposable {
     private final float BODY_RECTANGLE_WIDTH = 18f * MetalSlug.MAP_SCALE;
     private final float BODY_RECTANGLE_HEIGHT = 30f * MetalSlug.MAP_SCALE;
     private final float HEAD_CIRCLE_RADIUS = 9f * MetalSlug.MAP_SCALE;
+
 
     public enum MovementState {
         STANDING,
@@ -660,6 +662,7 @@ public class MarcoRossi implements Disposable {
         setMovementState(MovementState.DYING);
         setActionState(ActionState.NEUTRAL);
         resetFrameTimers(true, true, true);
+        screen.gameOver();
     }
 
     // Get the end position of the sprite on the X axis
@@ -691,7 +694,9 @@ public class MarcoRossi implements Disposable {
     }
 
     public void addCollidingEnemy(Enemy enemy){
-        collidingEnemies.add(enemy);
+        if(!collidingEnemies.contains(enemy, true)){
+            collidingEnemies.add(enemy);
+        }
     }
 
     public void removeCollidingEnemy(Enemy enemy){
@@ -699,7 +704,9 @@ public class MarcoRossi implements Disposable {
     }
 
     public void addCollidingHostage(Hostage hostage){
-        collidingHostages.add(hostage);
+        if(!collidingHostages.contains(hostage, true)){
+            collidingHostages.add(hostage);
+        }
     }
 
     public void removeCollidingHostage(Hostage hostage){

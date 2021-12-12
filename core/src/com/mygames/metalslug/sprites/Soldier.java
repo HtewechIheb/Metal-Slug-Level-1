@@ -444,6 +444,7 @@ public class Soldier extends Enemy{
     @Override
     public void hit(){
         assetManager.get("audio/sounds/soldier_death.mp3", Sound.class).play();
+        screen.addScore(screen.ENEMY_KILL_SCORE);
         Filter filter = new Filter();
         filter.maskBits = MetalSlug.GROUND_BITS | MetalSlug.OBJECT_BITS;
         body.getFixtureList().forEach(fixture -> fixture.setFilterData(filter));

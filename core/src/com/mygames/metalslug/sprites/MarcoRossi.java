@@ -290,7 +290,7 @@ public class MarcoRossi implements Disposable {
 
         switch(currentMovementState){
             case STANDING:
-                if(Gdx.input.isKeyPressed(Input.Keys.RIGHT)){
+                if(Gdx.input.isKeyPressed(Input.Keys.RIGHT) && (body.getPosition().x + bodyWidth) < screen.CAMERA_X_LIMIT){
                     move(new Vector2(0.3f, 0));
 
                     resetFrameTimers(true, true, false);
@@ -344,7 +344,7 @@ public class MarcoRossi implements Disposable {
                 legsOffsetX = legs.isFlipX() ? 1 * MetalSlug.MAP_SCALE : (-1) * MetalSlug.MAP_SCALE;
                 break;
             case RUNNING:
-                if((body.getPosition().x - 13 * MetalSlug.MAP_SCALE) <= (screen.getCamera().position.x - screen.getViewport().getWorldWidth() / 2)){
+                if((body.getPosition().x - 13 * MetalSlug.MAP_SCALE) <= (screen.getCamera().position.x - screen.getViewport().getWorldWidth() / 2) || (body.getPosition().x + bodyWidth) >= screen.CAMERA_X_LIMIT){
                     stop(true, false);
 
                     resetFrameTimers(true, true, false);
@@ -356,7 +356,7 @@ public class MarcoRossi implements Disposable {
                     resetFrameTimers(true, true, false);
                     setMovementState(MovementState.STANDING);
                 }
-                else if(Gdx.input.isKeyPressed(Input.Keys.RIGHT) && body.getLinearVelocity().x <= 1.5f){
+                else if(Gdx.input.isKeyPressed(Input.Keys.RIGHT) && body.getLinearVelocity().x <= 1.5f && (body.getPosition().x + bodyWidth) < screen.CAMERA_X_LIMIT){
                     move(new Vector2(0.3f, 0));
 
                     if(!isRunningRight){

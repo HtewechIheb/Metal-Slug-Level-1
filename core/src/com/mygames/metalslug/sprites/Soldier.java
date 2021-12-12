@@ -457,6 +457,7 @@ public class Soldier extends Enemy{
     }
 
     public void flee(){
+        isRunningRight = true;
         setState(State.FLEEING);
         resetFrameTimer();
     }

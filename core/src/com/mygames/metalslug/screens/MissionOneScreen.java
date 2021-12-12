@@ -159,7 +159,6 @@ public class MissionOneScreen implements Screen {
         update(delta);
         ScreenUtils.clear(0, 0, 0, 1);
         mapRenderer.render();
-        debugRenderer.render(world, camera.combined);
         game.batch.setProjectionMatrix(camera.combined);
         game.batch.begin();
         for(Hostage hostage : worldCreator.getHostages()){

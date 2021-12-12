@@ -395,12 +395,10 @@ public class Hobo extends Hostage {
         }
         else {
             region = sittingReleased.getKeyFrame(releaseStateTimer, false);
-            if(sittingReleased.getKeyFrameIndex(releaseStateTimer) == 2 && !released){
+            if(sittingReleased.isAnimationFinished(releaseStateTimer)){
                 defineFreeHostage();
                 setState(State.WAITING);
                 released = true;
-            }
-            else if(sittingReleased.isAnimationFinished(releaseStateTimer)){
                 releaseAnimationPlaying = false;
                 releaseStateTimer = 0;
             }
@@ -489,6 +487,6 @@ public class Hobo extends Hostage {
     }
 
     public boolean getIsReleased(){
-        return !releaseAnimationPlaying && released;
+        return released;
     }
 }

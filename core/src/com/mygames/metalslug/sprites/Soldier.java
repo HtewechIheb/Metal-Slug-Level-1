@@ -65,14 +65,12 @@ public class Soldier extends Enemy{
     private int chattingIndex;
 
     private State currentState;
-    private State previousState;
     private Stack<State> stateStack;
     private float stateTimer;
     private float deathTimer;
     private AttackMode attackMode;
 
-    private boolean isRunningRight = false;
-    private boolean isDying = false;
+    private boolean isRunningRight;
     private boolean collidingWithPlayer = false;
     private boolean attackCanceled = false;
 
@@ -87,7 +85,6 @@ public class Soldier extends Enemy{
         bodyWidth = 0;
         bodyHeight = 0;
         currentState = state;
-        previousState = state;
         stateStack = new Stack<>();
         stateStack.push(currentState);
         this.isRunningRight = isRunningRight;

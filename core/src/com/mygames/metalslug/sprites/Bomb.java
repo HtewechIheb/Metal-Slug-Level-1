@@ -104,7 +104,6 @@ public class Bomb implements Disposable {
 
         if(toExplode){
             position = new Vector2(body.getPosition());
-            Gdx.app.log("Collision", position +"");
 
             currentState = State.EXPLODING;
             toExplode = false;
@@ -146,10 +145,6 @@ public class Bomb implements Disposable {
     private void remove(){
         world.destroyBody(body);
         screen.getWorldCreator().getBombs().removeValue(this, true);
-    }
-
-    public boolean getPlayerInProximity(){
-        return playerInProximity;
     }
 
     @Override

@@ -93,9 +93,7 @@ public class MarcoRossi implements Disposable {
     private Animation<TextureRegion> bombed;
 
     private MovementState currentMovementState;
-    private MovementState previousMovementState;
     private ActionState currentActionState;
-    private ActionState previousActionState;
     private Stack<MovementState> movementStateStack;
     private Stack<ActionState> actionStateStack;
     private float torsoStateTimer;
@@ -121,9 +119,7 @@ public class MarcoRossi implements Disposable {
         fullBody = new Sprite();
         textureAtlas = screen.getPlayerTextureAtlas();
         currentMovementState = MovementState.STANDING;
-        previousMovementState = MovementState.STANDING;
         currentActionState = ActionState.NEUTRAL;
-        previousActionState = ActionState.NEUTRAL;
         movementStateStack = new Stack<>();
         actionStateStack = new Stack<>();
         movementStateStack.push(currentMovementState);
@@ -723,10 +719,6 @@ public class MarcoRossi implements Disposable {
 
     public float getBodyWidth(){
         return bodyWidth;
-    }
-
-    public float getBodyHeight(){
-        return bodyHeight;
     }
 
     public boolean getIsRunningRight(){

@@ -26,11 +26,7 @@ public class WelcomeScreen implements Screen {
     private Stage stage;
     private Viewport viewport;
     private AssetManager assetManager;
-    private Table table;
-    private Table nameTable;
 
-    private Label welcomeLabel;
-    private Label enterNameLabel;
     private Label[] letters;
     private boolean inputFull = false;
     private boolean inputEmpty = false;
@@ -46,15 +42,15 @@ public class WelcomeScreen implements Screen {
 
         defineAcceptedKeys();
 
-        table = new Table();
+        Table table = new Table();
         table.top();
         table.setFillParent(true);
 
-        nameTable = new Table();
+        Table nameTable = new Table();
         table.align(Align.center | Align.top);
 
-        welcomeLabel = new Label("Welcome", new Label.LabelStyle(new BitmapFont(), Color.WHITE));
-        enterNameLabel = new Label("Please Enter Your Name", new Label.LabelStyle(new BitmapFont(), Color.WHITE));
+        Label welcomeLabel = new Label("Welcome", new Label.LabelStyle(new BitmapFont(), Color.WHITE));
+        Label enterNameLabel = new Label("Please Enter Your Name", new Label.LabelStyle(new BitmapFont(), Color.WHITE));
 
         letters = new Label[8];
         for(byte i = 0; i < 8; i++){

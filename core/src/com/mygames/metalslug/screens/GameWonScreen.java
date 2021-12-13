@@ -59,7 +59,7 @@ public class GameWonScreen implements Screen {
         Label.LabelStyle font = new Label.LabelStyle(new BitmapFont(), Color.WHITE);
 
         Label gameWonLabel = new Label("YOU WIN!", font);
-        Label scoreLabel = new Label(String.format("Your Score: %04d", playerScore), font);
+        Label scoreLabel = new Label(String.format("Your Score: %04d", this.playerScore), font);
         Label highScoresLabel = new Label("High Scores:", font);
         Label playAgainLabel = new Label("Click Here To Play Again", font);
 

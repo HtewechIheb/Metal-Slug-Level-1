@@ -18,7 +18,6 @@ public class Hud implements Disposable {
     private Viewport viewport;
     private MissionOneScreen screen;
 
-    private Label scoreTitleLabel;
     private Label scoreLabel;
 
     public Hud(SpriteBatch spriteBatch, MissionOneScreen screen){
@@ -30,7 +29,7 @@ public class Hud implements Disposable {
         table.top();
         table.setFillParent(true);
 
-        scoreTitleLabel = new Label("SCORE", new Label.LabelStyle(new BitmapFont(), Color.WHITE));
+        Label scoreTitleLabel = new Label("SCORE", new Label.LabelStyle(new BitmapFont(), Color.WHITE));
         scoreLabel = new Label(String.format("%04d", screen.getScore()), new Label.LabelStyle(new BitmapFont(), Color.WHITE));
 
         table.add(scoreTitleLabel).expandX().padTop(10);

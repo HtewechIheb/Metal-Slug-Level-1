@@ -186,7 +186,7 @@ public class Hobo extends Hostage {
         frames.clear();
     }
 
-    protected void defineCapturedHostage() {
+    private void defineCapturedHostage() {
         BodyDef bodyDef = new BodyDef();
         FixtureDef fixtureDef = new FixtureDef();
         PolygonShape bodyShape = new PolygonShape();

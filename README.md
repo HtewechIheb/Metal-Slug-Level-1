@@ -1,1 +1,1 @@
-This is a recreation of the legendary Metal Slug's first mission with much simpler AI using LibGDX and Java.
+This is a clone of the legendary Metal Slug's first mission with much more basic AI. Technologies used: Java and LibGDX.
